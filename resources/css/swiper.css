@@ -1,0 +1,27 @@
+@import 'swiper/css';
+@import 'swiper/css/navigation';
+@import 'swiper/css/pagination';
+
+/* Geser seluruh pagination */
+.swiper-pagination {
+    position: relative; /* biar bisa dikontrol */
+    margin-top: 60px; /* jarak dari slider */
+    text-align: center; /* biar bullet tetap di tengah */
+}
+
+/* Styling bullet */
+.swiper-pagination-bullet {
+    width: 14px;
+    height: 14px;
+    background-color: #d1d5db;
+    opacity: 1;
+    transition: all 0.3s ease;
+    margin: 0 6px; /* jarak antar bullet */
+}
+
+/* Bullet aktif */
+.swiper-pagination-bullet-active {
+    background-color: #16a34a;
+    width: 18px;
+    height: 18px;
+}
