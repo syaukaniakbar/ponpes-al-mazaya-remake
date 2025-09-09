@@ -8,6 +8,7 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\FileUpload;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Cache;
 
 
 class SiswaForm
@@ -32,93 +33,81 @@ class SiswaForm
             Select::make('provinsi')
                 ->label('Provinsi')
                 ->required()
+                ->placeholder('Pilih provinsi')
                 ->options(function () {
-                    $response = Http::get('https://syaukaniakbar.github.io/api-wilayah-indonesia/api/provinces.json');
-                    if ($response->successful()) {
-                        return collect($response->json())
-                            ->pluck('name', 'id')
-                            ->toArray();
-                    }
-                    return [];
+                    return Cache::remember('provinsi', 86400, function () {
+                        $response = Http::get('https://syaukaniakbar.github.io/api-wilayah-indonesia/api/provinces.json');
+                        return $response->successful()
+                            ? collect($response->json())->pluck('name', 'id')->toArray()
+                            : ['' => 'Gagal memuat provinsi'];
+                    });
                 })
-                ->native(false) // supaya bukan default select bawaan browser
-                ->searchable()  // lebih gampang cari provinsi
-                ->reactive()
-                   ->afterStateUpdated(function ($state, callable $set) {
-        // setiap kali provinsi berubah, reset kota ke null
-        $set('kota', null);
-    }),
+                ->native(false)
+                ->searchable()
+                ->afterStateUpdated(fn (callable $set) => $set('kota', null)),
 
-
-            // Kota
             Select::make('kota')
                 ->label('Kota / Kabupaten')
                 ->required()
+                ->placeholder('Pilih kota')
                 ->options(function (callable $get) {
                     $provinsiId = $get('provinsi');
-
                     if ($provinsiId) {
                         $response = Http::get("https://syaukaniakbar.github.io/api-wilayah-indonesia/api/regencies/{$provinsiId}.json");
-
-                        if ($response->successful()) {
-                            return collect($response->json())
-                                ->pluck('name', 'id')
-                                ->toArray();
-                        }
+                        return $response->successful()
+                            ? collect($response->json())->pluck('name', 'id')->toArray()
+                            : ['' => 'Gagal memuat kota'];
                     }
-
                     return [];
                 })
                 ->native(false)
                 ->searchable()
-                ->reactive()
+                ->preload()
+                ->live()
+                ->afterStateUpdated(fn (callable $set) => $set('kecamatan', null))
                 ->disabled(fn (callable $get) => empty($get('provinsi'))),
 
-            // Kecamatan
             Select::make('kecamatan')
                 ->label('Kecamatan')
                 ->required()
+                ->placeholder('Pilih kecamatan')
                 ->options(function (callable $get) {
                     $kotaId = $get('kota');
                     if ($kotaId) {
                         $response = Http::get("https://syaukaniakbar.github.io/api-wilayah-indonesia/api/districts/{$kotaId}.json");
-                        if ($response->successful()) {
-                            return collect($response->json())
-                                ->pluck('name', 'id')
-                                ->toArray();
-                        }
+                        return $response->successful()
+                            ? collect($response->json())->pluck('name', 'id')->toArray()
+                            : ['' => 'Gagal memuat kecamatan'];
                     }
                     return [];
                 })
-                ->reactive()
+                ->native(false)
+                ->searchable()
+                ->preload()
+                ->live()
+                ->afterStateUpdated(fn (callable $set) => $set('kelurahan', null))
                 ->disabled(fn (callable $get) => empty($get('kota'))),
 
-            // Kelurahan
             Select::make('kelurahan')
                 ->label('Kelurahan / Desa')
                 ->required()
+                ->placeholder('Pilih kelurahan')
                 ->options(function (callable $get) {
                     $kecamatanId = $get('kecamatan');
                     if ($kecamatanId) {
                         $response = Http::get("https://syaukaniakbar.github.io/api-wilayah-indonesia/api/villages/{$kecamatanId}.json");
-                        if ($response->successful()) {
-                            return collect($response->json())
-                                ->pluck('name', 'id')
-                                ->toArray();
-                        }
+                        return $response->successful()
+                            ? collect($response->json())->pluck('name', 'id')->toArray()
+                            : ['' => 'Gagal memuat kelurahan'];
                     }
                     return [];
                 })
-                ->reactive()
+                ->native(false)
+                ->searchable()
+                ->preload()
+                ->live()
                 ->disabled(fn (callable $get) => empty($get('kecamatan'))),
 
-
-    
-
-
-
-            TextInput::make('kecamatan')->required(),
-            TextInput::make('kelurahan')->required(),
             TextInput::make('jumlah_saudara')->numeric()->required(),
             TextInput::make('anak_ke')->numeric()->required(),
             TextInput::make('asal_sekolah')->required(),
