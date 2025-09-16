@@ -12,27 +12,42 @@ const steps = [
 
 const TahapanPendaftaran = function TahapanPendaftaran() {
     return (
-        <div className="rounded-2xl bg-white p-8 shadow-md ring-1 ring-gray-100">
-            <h2 className="mb-4 text-2xl font-bold text-gray-900 sm:text-3xl">Tahapan Pendaftaran 1</h2>
-            <p className="text-lg text-gray-600">Mulai proses pendaftaran dengan mengikuti langkah-langkah awal yang telah ditentukan.</p>
+        <div className="w-full px-4 sm:px-4">
+            <div className="mx-auto rounded-2xl bg-white p-6 shadow-md ring-1 ring-gray-100 sm:p-8">
+                {/* Header */}
+                <h1 className="mb-3 text-lg font-bold text-gray-900 sm:mb-4 sm:text-2xl">Formulir Pendaftaran</h1>
+                <p className="mb-8 text-sm text-gray-600 sm:text-base">
+                    Silakan lengkapi data berikut dengan benar untuk melanjutkan proses pendaftaran.
+                </p>
+            </div>
         </div>
     );
 };
 
 const AturanPonpes = function AturanPonpes() {
     return (
-        <div className="rounded-2xl bg-white p-8 shadow-md ring-1 ring-gray-100">
-            <h2 className="mb-4 text-2xl font-bold text-gray-900 sm:text-3xl">Tahapan Pendaftaran 2</h2>
-            <p className="text-lg text-gray-600">Mulai proses pendaftaran dengan mengikuti langkah-langkah awal yang telah ditentukan.</p>
+        <div className="w-full px-4 sm:px-4">
+            <div className="mx-auto rounded-2xl bg-white p-6 shadow-md ring-1 ring-gray-100 sm:p-8">
+                {/* Header */}
+                <h1 className="mb-3 text-lg font-bold text-gray-900 sm:mb-4 sm:text-2xl">Formulir Pendaftaran</h1>
+                <p className="mb-8 text-sm text-gray-600 sm:text-base">
+                    Silakan lengkapi data berikut dengan benar untuk melanjutkan proses pendaftaran.
+                </p>
+            </div>
         </div>
     );
 };
 
 const SuratPernyataan = function SuratPernyataan() {
     return (
-        <div className="rounded-2xl bg-white p-8 shadow-md ring-1 ring-gray-100">
-            <h2 className="mb-4 text-2xl font-bold text-gray-900 sm:text-3xl">Tahapan Pendaftaran 3</h2>
-            <p className="text-lg text-gray-600">Mulai proses pendaftaran dengan mengikuti langkah-langkah awal yang telah ditentukan.</p>
+        <div className="w-full px-4 sm:px-4">
+            <div className="mx-auto rounded-2xl bg-white p-6 shadow-md ring-1 ring-gray-100 sm:p-8">
+                {/* Header */}
+                <h1 className="mb-3 text-lg font-bold text-gray-900 sm:mb-4 sm:text-2xl">Formulir Pendaftaran</h1>
+                <p className="mb-8 text-sm text-gray-600 sm:text-base">
+                    Silakan lengkapi data berikut dengan benar untuk melanjutkan proses pendaftaran.
+                </p>
+            </div>
         </div>
     );
 };
