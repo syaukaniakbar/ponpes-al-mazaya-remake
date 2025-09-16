@@ -9,8 +9,8 @@ type Props = {
 
 export default function NewsSection({ blogs }: Props) {
     return (
-        <section className="relative z-10 bg-gray-50 py-28">
-            <div className="mx-auto max-w-6xl px-6">
+        <section className="relative z-10 bg-gray-50 py-20">
+            <div className="mx-auto max-w-7xl px-6">
                 {/* Header */}
                 <motion.div className="mb-16 text-center">
                     <motion.p
