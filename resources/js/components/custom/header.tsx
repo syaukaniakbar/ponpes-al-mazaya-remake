@@ -1,115 +1,97 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
-import { motion } from 'framer-motion';
+import clsx from 'clsx';
+import { useEffect, useRef, useState } from 'react';
+import 'swiper/css';
+import 'swiper/css/navigation';
+import { Autoplay, Navigation } from 'swiper/modules';
+import { Swiper, SwiperSlide } from 'swiper/react';
 
-// ====== Type & Data ======
-type HeroContent = {
-    tagline: string;
+type Header = {
+    id: string;
+    photo: string;
     title: string;
-    highlight: string;
     description: string;
-    ctas: {
-        label: string;
-        variant: 'primary' | 'outline';
-        href: string;
-    }[];
 };
 
-const heroData: HeroContent = {
-    tagline: 'Pendidikan Islam Modern',
-    title: 'Selamat Datang di',
-    highlight: 'Pondok Pesantren Al-Mazaya',
-    description: 'Bersama membangun generasi Qur’ani yang berilmu, berakhlak mulia, dan siap menghadapi tantangan zaman.',
-    ctas: [
-        {
-            label: 'Daftar Santri Baru',
-            variant: 'primary',
-            href: '/daftar',
-        },
-        {
-            label: 'Kenal Lebih Dekat',
-            variant: 'outline',
-            href: '/tentang',
-        },
-    ],
-};
+const headers: Header[] = [
+    {
+        id: '1',
+        photo: '/images/header1.jpg',
+        title: 'Two Students of Al Mazaya Islamic Junior High School Banjarmasin Seize the Golden Opportunity to Speak at RRI',
+        description:
+            'Nanda Syifa Khumaira and Rahma Kamila, two outstanding students of Al Mazaya Islamic Junior High School Banjarmasin, won a golden opportunity to speak at RRI!',
+    },
+    {
+        id: '1',
+        photo: '/images/header1.jpg',
+        title: 'Two Students of Al Mazaya Islamic Junior High School Banjarmasin Seize the Golden Opportunity to Speak at RRI',
+        description:
+            'Nanda Syifa Khumaira and Rahma Kamila, two outstanding students of Al Mazaya Islamic Junior High School Banjarmasin, won a golden opportunity to speak at RRI!',
+    },
+];
 
-// ====== Component ======
-export default function Hero() {
+export default function HeaderSection() {
+    const [isReady, setIsReady] = useState(false);
+    const [activeIndex, setActiveIndex] = useState(0);
+    const swiperRef = useRef<any>(null);
+
+    useEffect(() => {
+        setIsReady(true);
+    }, []);
+
+    if (!headers || headers.length === 0) {
+        return (
+            <section id="headers" className="mt-18 bg-gray-50 py-24">
+                <div className="text-center text-gray-500">Tidak ada gambar header yang tersedia.</div>
+            </section>
+        );
+    }
+
     return (
-        <section className="relative flex h-screen w-full items-center justify-center overflow-hidden text-center text-white">
-            {/* Background */}
-            <img
-                src="images/dummy_header.jpg"
-                alt="Pondok Pesantren Al-Mazaya"
-                className="absolute inset-0 h-full w-full object-cover object-center blur-md"
-                loading="lazy"
-            />
+        <section id="headers" className="mt-18 bg-gray-50">
+            <div className="relative mx-auto text-center">
+                {isReady && (
+                    <Swiper
+                        modules={[Navigation, Autoplay]}
+                        spaceBetween={30}
+                        slidesPerView={1}
+                        loop
+                        autoplay={{ delay: 4000, disableOnInteraction: false }}
+                        onSlideChange={(swiper) => setActiveIndex(swiper.realIndex)}
+                        onSwiper={(swiper) => (swiperRef.current = swiper)}
+                    >
+                        {headers.map((header, idx) => (
+                            <SwiperSlide key={header.id}>
+                                <div className="relative overflow-hidden">
+                                    {/* Gambar dengan zoom-in animasi */}
+                                    <img
+                                        src={header.photo}
+                                        alt={header.title}
+                                        className="h-80 w-full object-cover transition-transform duration-1000 ease-in-out hover:scale-105 sm:h-96 md:h-[700px]"
+                                        loading="lazy"
+                                    />
+                                </div>
+                            </SwiperSlide>
+                        ))}
+                    </Swiper>
+                )}
 
-            {/* Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/60 to-black/80" />
-
-            {/* Konten */}
-            <motion.div
-                initial={{ opacity: 0, y: 40 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8 }}
-                className="relative z-10 max-w-5xl px-6"
-            >
-                {/* Tagline */}
-                <motion.p
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                    className="mb-2 font-semibold tracking-wide text-green-300 uppercase"
-                >
-                    {heroData.tagline}
-                </motion.p>
-
-                {/* Title */}
-                <motion.h1
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4 }}
-                    className="mb-4 text-3xl leading-tight font-bold md:text-6xl lg:text-7xl"
-                >
-                    {heroData.title} <span className="text-green-400">{heroData.highlight}</span>
-                </motion.h1>
-
-                {/* Description */}
-                <motion.p
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.6 }}
-                    className="mb-6 text-base text-gray-200 md:text-xl"
-                >
-                    {heroData.description}
-                </motion.p>
-
-                {/* CTA Buttons */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.8 }}
-                    className="flex flex-col justify-center gap-4 sm:flex-row"
-                >
-                    {heroData.ctas.map((cta, index) => (
-                        <Button
-                            key={index}
-                            size="lg"
-                            aria-label={cta.label}
-                            className={`rounded-2xl px-8 py-4 text-lg ${
-                                cta.variant === 'primary'
-                                    ? 'bg-green-600 text-white hover:bg-green-700'
-                                    : 'border border-white text-black hover:bg-white hover:text-black'
-                            }`}
-                        >
-                            {cta.label}
-                        </Button>
+                {/* Custom pagination */}
+                <div className="absolute bottom-10 left-1/2 z-10 flex -translate-x-1/2 space-x-3">
+                    {headers.map((_, idx) => (
+                        <button
+                            key={idx}
+                            className={clsx(
+                                'h-2 w-2 rounded-full transition-all focus:ring-2 focus:ring-green-400 focus:outline-none',
+                                activeIndex === idx ? 'scale-125 bg-green-500' : 'bg-gray-300',
+                            )}
+                            onClick={() => swiperRef.current?.slideToLoop(idx)}
+                            aria-label={`Go to slide ${idx + 1}`}
+                        />
                     ))}
-                </motion.div>
-            </motion.div>
+                </div>
+            </div>
         </section>
     );
 }
