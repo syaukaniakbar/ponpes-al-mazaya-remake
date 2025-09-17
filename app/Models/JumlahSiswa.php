@@ -10,5 +10,11 @@ class JumlahSiswa extends Model
     use HasFactory;
     protected $table = 'jumlah_siswa';
 
-    protected $fillable = ['tingkatan', 'tahun', 'total_siswa'];
+    protected $fillable = [
+        'angkatan', 
+        'ma', 
+        'mts',
+        'wustha',
+        'ulya',
+        'total_siswa'];
 }

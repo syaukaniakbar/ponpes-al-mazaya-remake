@@ -14,15 +14,26 @@ class JumlahSiswasTable
     {
         return $table
             ->columns([
-                TextColumn::make('tingkatan')
+                TextColumn::make('angkatan')
                     ->sortable()
                     ->searchable()
-                    ->label('Tingkatan'),
+                    ->label('Angkatan'),
 
-                TextColumn::make('tahun')
+                TextColumn::make('ma')
                     ->sortable()
-                    ->searchable()
-                    ->label('Tahun'),
+                    ->label('MA'),
+
+                TextColumn::make('mts')
+                    ->sortable()
+                    ->label('MTs'),
+
+                TextColumn::make('wustha')
+                    ->sortable()
+                    ->label('Wustha'),
+
+                TextColumn::make('ulya')
+                    ->sortable()
+                    ->label('Ulya'),
 
                 TextColumn::make('total_siswa')
                     ->sortable()
