@@ -5,30 +5,67 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Autoplay, Navigation, Pagination } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
+import type { Staff } from '../../types/index';
 import '../../../css/swiper.css';
 
-type Staff = {
-    name: string;
-    role: string;
-    photo: string;
+type Props = {
+    staffs: Staff[];
 };
 
-const staffs: Staff[] = [
-    { name: 'Ustadz Ahmad', role: 'Kepala Sekolah', photo: '/staff-teacher/mardani.jpg' },
-    { name: 'Ustadzah Fatimah', role: 'Guru Qur’an', photo: '/staff-teacher/mardani.jpg' },
-    { name: 'Ustadz Yusuf', role: 'Guru Bahasa Arab', photo: '/staff-teacher/mardani.jpg' },
-    { name: 'Ustadzah Aisyah', role: 'Guru Sains', photo: '/staff-teacher/mardani.jpg' },
-    { name: 'Ustadz Ali', role: 'Guru Fiqh', photo: '/staff-teacher/mardani.jpg' },
-];
-
-export default function StaffSection() {
+export default function StaffSection({ staffs }: Props) {
     const prevRef = useRef<HTMLDivElement>(null);
     const nextRef = useRef<HTMLDivElement>(null);
     const [swiperReady, setSwiperReady] = useState(false);
 
+    // Filter only active staff
+    const activeStaffs = staffs.filter(staff => staff.status === 'active');
+
     useEffect(() => {
         setSwiperReady(true);
     }, []);
+
+    // Show fallback message if no staff data
+    if (activeStaffs.length === 0) {
+        return (
+            <section id="speech" className="relative bg-gray-50 py-28">
+                <div className="mx-auto max-w-6xl px-6 text-center">
+                    <motion.p
+                        initial={{ opacity: 0, y: 10 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6 }}
+                        viewport={{ once: true }}
+                        className="mb-3 text-sm font-medium tracking-wider text-green-600 uppercase"
+                    >
+                        Tenaga Pendidik
+                    </motion.p>
+
+                    <motion.h2
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6 }}
+                        viewport={{ once: true }}
+                        className="mb-6 text-4xl font-bold text-gray-900 md:text-5xl"
+                    >
+                        Guru <span className="text-green-600">dan</span> Staff
+                    </motion.h2>
+
+                    <motion.p
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6, delay: 0.1 }}
+                        viewport={{ once: true }}
+                        className="mx-auto mb-16 max-w-2xl text-base text-gray-600"
+                    >
+                        Tenaga pendidik berpengalaman dan berdedikasi untuk membimbing generasi Qur’ani yang unggul dalam ilmu dan akhlak.
+                    </motion.p>
+
+                    <div className="py-10 text-gray-500">
+                        Data staff belum tersedia.
+                    </div>
+                </div>
+            </section>
+        );
+    }
 
     return (
         <section id="speech" className="relative bg-gray-50 py-28">
@@ -98,8 +135,8 @@ export default function StaffSection() {
                             0: { slidesPerView: 1 },
                         }}
                     >
-                        {staffs.map((staff, idx) => (
-                            <SwiperSlide key={idx}>
+                        {activeStaffs.map((staff, idx) => (
+                            <SwiperSlide key={staff.id || idx}>
                                 <motion.div
                                     whileHover={{ scale: 1.05 }}
                                     whileFocus={{ scale: 1.05 }}
@@ -111,7 +148,7 @@ export default function StaffSection() {
                                     {/* Gambar + border */}
                                     <div className="relative overflow-hidden border-transparent transition-all duration-300 group-hover:border-green-400">
                                         <img
-                                            src={staff.photo}
+                                            src={staff.image_path ? `/storage/${staff.image_path}` : '/images/default-staff.jpg'}
                                             alt={`Photo of ${staff.name}, ${staff.role}`}
                                             className="h-64 w-full rounded-2xl object-cover transition-transform duration-500 sm:h-72"
                                         />
