@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Videos\Schemas;
 
 use Filament\Schemas\Schema;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Textarea;
 
 class VideoForm
 {
@@ -11,7 +12,15 @@ class VideoForm
     {
         return $schema
             ->components([
-                 TextInput::make('url')
+                TextInput::make('title')
+                    ->label('Title')
+                    ->required()
+                    ->maxLength(255),
+                Textarea::make('description')
+                    ->label('Description')
+                    ->required()
+                    ->maxLength(65535),
+                TextInput::make('url')
                     ->label('URL')
                     ->url() // validasi otomatis URL
                     ->required()

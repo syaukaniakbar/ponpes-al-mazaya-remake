@@ -14,17 +14,25 @@ class VideosTable
     {
         return $table
             ->columns([
-             TextColumn::make('url')
+                TextColumn::make('title')
+                    ->label('Title')
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('description')
+                    ->label('Description')
+                    ->wrap()
+                    ->limit(50),
+                TextColumn::make('url')
                     ->label('URL')
                     ->url(fn ($record) => $record->url, true) // klik link langsung buka
                     ->wrap()
                     ->sortable()
                     ->searchable(),
-             TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->label('Created At')
                     ->dateTime('d M Y H:i')
                     ->sortable(),
-             TextColumn::make('updated_at')
+                TextColumn::make('updated_at')
                     ->label('Updated At')
                     ->dateTime('d M Y H:i')
                     ->sortable(),
