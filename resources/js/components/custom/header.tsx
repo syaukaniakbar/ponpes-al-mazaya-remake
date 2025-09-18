@@ -6,32 +6,13 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import { Autoplay, Navigation } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
+import type { Header as HeaderType } from '../../types/index';
 
-type Header = {
-    id: string;
-    photo: string;
-    title: string;
-    description: string;
+type Props = {
+    headers: HeaderType[];
 };
 
-const headers: Header[] = [
-    {
-        id: '1',
-        photo: '/images/header1.jpg',
-        title: 'Two Students of Al Mazaya Islamic Junior High School Banjarmasin Seize the Golden Opportunity to Speak at RRI',
-        description:
-            'Nanda Syifa Khumaira and Rahma Kamila, two outstanding students of Al Mazaya Islamic Junior High School Banjarmasin, won a golden opportunity to speak at RRI!',
-    },
-    {
-        id: '1',
-        photo: '/images/header1.jpg',
-        title: 'Two Students of Al Mazaya Islamic Junior High School Banjarmasin Seize the Golden Opportunity to Speak at RRI',
-        description:
-            'Nanda Syifa Khumaira and Rahma Kamila, two outstanding students of Al Mazaya Islamic Junior High School Banjarmasin, won a golden opportunity to speak at RRI!',
-    },
-];
-
-export default function HeaderSection() {
+export default function HeaderSection({ headers }: Props) {
     const [isReady, setIsReady] = useState(false);
     const [activeIndex, setActiveIndex] = useState(0);
     const swiperRef = useRef<any>(null);
@@ -40,10 +21,13 @@ export default function HeaderSection() {
         setIsReady(true);
     }, []);
 
-    if (!headers || headers.length === 0) {
+    // Filter out headers without image_url
+    const validHeaders = headers.filter((header) => header.image_url);
+
+    if (!validHeaders || validHeaders.length === 0) {
         return (
             <section id="headers" className="mt-18 bg-gray-50 py-24">
-                <div className="text-center text-gray-500">Tidak ada gambar header yang tersedia.</div>
+                <div className="text-center text-gray-500">Tidak ada header yang tersedia.</div>
             </section>
         );
     }
@@ -61,16 +45,34 @@ export default function HeaderSection() {
                         onSlideChange={(swiper) => setActiveIndex(swiper.realIndex)}
                         onSwiper={(swiper) => (swiperRef.current = swiper)}
                     >
-                        {headers.map((header, idx) => (
+                        {validHeaders.map((header) => (
                             <SwiperSlide key={header.id}>
                                 <div className="relative overflow-hidden">
                                     {/* Gambar dengan zoom-in animasi */}
                                     <img
-                                        src={header.photo}
+                                        src={header.image_url ? `/storage/${header.image_url}` : '/images/default-header.jpg'}
                                         alt={header.title}
                                         className="h-80 w-full object-cover transition-transform duration-1000 ease-in-out hover:scale-105 sm:h-96 md:h-[700px]"
                                         loading="lazy"
                                     />
+                                    
+                                    {/* Overlay content */}
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 p-4 text-center text-white md:p-8">
+                                        <h1 className="mb-4 text-2xl font-bold md:text-4xl lg:text-5xl">
+                                            {header.title}
+                                        </h1>
+                                        <p className="mb-6 max-w-3xl text-sm md:text-lg">
+                                            {header.description}
+                                        </p>
+                                        {header.button_text && header.button_url && (
+                                            <a
+                                                href={header.button_url}
+                                                className="rounded-full bg-green-600 px-6 py-3 font-semibold text-white shadow-lg transition hover:bg-green-700 md:px-8 md:py-4"
+                                            >
+                                                {header.button_text}
+                                            </a>
+                                        )}
+                                    </div>
                                 </div>
                             </SwiperSlide>
                         ))}
@@ -79,7 +81,7 @@ export default function HeaderSection() {
 
                 {/* Custom pagination */}
                 <div className="absolute bottom-10 left-1/2 z-10 flex -translate-x-1/2 space-x-3">
-                    {headers.map((_, idx) => (
+                    {validHeaders.map((_, idx) => (
                         <button
                             key={idx}
                             className={clsx(
