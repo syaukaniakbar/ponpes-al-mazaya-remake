@@ -13,7 +13,9 @@ return new class extends Migration
     {
         Schema::create('video_profile', function (Blueprint $table) {
             $table->id();
-            $table->string('url')->default('https://example.com');
+            $table->string('title'); // judul video
+            $table->text('description'); 
+            $table->string('url')->default('https://www.youtube.com/@ponpesalmazaya');
             $table->timestamps();
         });
     }
