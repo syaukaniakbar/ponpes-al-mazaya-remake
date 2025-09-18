@@ -11,8 +11,11 @@ class Document extends Model
 
     protected $fillable = [
         'name', 
-        'type', 
-        'path'
+        'category', 
+        'file_path',
+        'mime_type',
+        'extension',
+        'description'
     ];
 }
 
