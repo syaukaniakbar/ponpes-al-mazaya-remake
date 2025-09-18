@@ -5,6 +5,10 @@ use Inertia\Inertia;
 use App\Http\Controllers\SiswaController;
 use App\Http\Controllers\BlogController;
 use App\Models\Blog;
+use App\Models\Video;
+use App\Models\TeacherStaff;
+use App\Models\JumlahSiswa;
+use App\Models\Header;
 
 Route::get('/', function () {
     $blogs = Blog::latest()->take(3)->get()->map(function ($blog) {
@@ -12,8 +16,20 @@ Route::get('/', function () {
         return $blog;
     });
 
+    $videos = Video::latest()->take(1)->get();
+    
+    $staffs = TeacherStaff::where('status', 'active')->get();
+    
+    $studentCounts = JumlahSiswa::all();
+    
+    $headers = Header::all();
+
     return Inertia::render('main', [
         'blogs' => $blogs,
+        'videos' => $videos, // Pass videos (plural) to match the frontend
+        'staffs' => $staffs,
+        'studentCounts' => $studentCounts,
+        'headers' => $headers,
     ]);
 })->name('main');
 
@@ -25,7 +41,7 @@ Route::get('about-us', function () {
 Route::prefix('blog')->name('blog.')->group(function () {
     Route::get('/', [BlogController::class, 'index'])->name('index');
     Route::get('/{slug}', [BlogController::class, 'show'])->name('show');
-});;
+});
 
 
 Route::prefix('pendaftaran')->name('pendaftaran.')->group(function () {

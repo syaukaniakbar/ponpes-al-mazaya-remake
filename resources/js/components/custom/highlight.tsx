@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import type { LucideIcon } from 'lucide-react';
 import { BookOpen, GraduationCap, Layers, School } from 'lucide-react';
+import type { StudentCount } from '../../types/index';
 
 // ====== Type & Data ======
 type Highlight = {
@@ -10,34 +11,54 @@ type Highlight = {
     count: number;
 };
 
-const highlights: Highlight[] = [
+type Props = {
+    studentCounts: StudentCount[];
+};
+
+const programData = [
     {
         title: 'Wustha',
         description: 'Program menengah berbasis Qur’ani untuk membangun pondasi ilmu agama dan pengetahuan umum.',
         icon: BookOpen,
-        count: 120,
+        field: 'wustha',
     },
     {
         title: 'Ulya',
         description: 'Jenjang lanjutan memperdalam keilmuan Islam, akhlak mulia, dan wawasan global.',
         icon: GraduationCap,
-        count: 95,
+        field: 'ulya',
     },
     {
         title: 'MTs',
         description: 'Madrasah Tsanawiyah dengan kurikulum nasional yang diperkaya sentuhan islami modern.',
         icon: School,
-        count: 210,
+        field: 'mts',
     },
     {
         title: 'MA',
         description: 'Madrasah Aliyah untuk menyiapkan generasi Qur’ani siap melanjutkan pendidikan tinggi.',
         icon: Layers,
-        count: 175,
+        field: 'ma',
     },
 ];
 
-export default function HighlightSection() {
+export default function HighlightSection({ studentCounts }: Props) {
+    // Get the latest student count data
+    const latestData = studentCounts.length > 0 ? studentCounts[studentCounts.length - 1] : null;
+
+    // Create highlights with actual data
+    const highlights: Highlight[] = latestData
+        ? programData.map((program) => ({
+              title: program.title,
+              description: program.description,
+              icon: program.icon,
+              count: latestData[program.field as keyof StudentCount] as number,
+          }))
+        : programData.map((program) => ({
+              ...program,
+              count: 0,
+          }));
+
     return (
         <section className="relative z-10 bg-white py-28">
             <div className="mx-auto max-w-6xl px-7 text-center md:px-12">
