@@ -17,11 +17,10 @@ class HeadersTable
            ->columns([
                 TextColumn::make('id')->sortable(),
                 ImageColumn::make('image_url')->label('Gambar'),
-                TextColumn::make('label')->searchable(),
-                TextColumn::make('nama_tombol_aksi')->label('Nama Tombol Aksi'),
-                TextColumn::make('url_aksi')->label('URL Aksi'),
                 TextColumn::make('title')->searchable(),
                 TextColumn::make('description')->limit(50),
+                TextColumn::make('button_text')->label('Button Text'),
+                TextColumn::make('button_url')->label('Button URL'),
                 TextColumn::make('created_at')->dateTime()->sortable(),
                 TextColumn::make('updated_at')->dateTime()->sortable(),
             ])

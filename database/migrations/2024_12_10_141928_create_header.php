@@ -15,11 +15,9 @@ return new class extends Migration
             $table->id();
             $table->string('image_url')->nullable();
             $table->string('title');
-            $table->string('paragraph');
-            $table->string('label');
-            $table->string('nama_tombol_aksi');
-            $table->string('url_aksi');
-   
+            $table->text('description')->nullable();
+            $table->string('button_text')->nullable();
+            $table->string('button_url')->nullable();
             $table->timestamps();
         });
     }

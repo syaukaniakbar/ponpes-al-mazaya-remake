@@ -10,10 +10,9 @@ class Header extends Model
 
     protected $fillable = [
         'title',
-        'label',
-        'nama_tombol_aksi',
-        'url_aksi',
-        'image_url',
         'description',
+        'button_text',
+        'button_url',
+        'image_url',
     ];
 }

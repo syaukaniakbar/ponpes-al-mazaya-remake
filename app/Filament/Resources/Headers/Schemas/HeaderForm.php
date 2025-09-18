@@ -20,25 +20,7 @@ class HeaderForm
                     ->image()
                     ->imagePreviewHeight('150')
                     ->directory('header_images')
-                    ->preserveFilenames()
-                    ->required(),
-
-
-                TextInput::make('label')
-                    ->label('Label')
-                    ->required()
-                    ->maxLength(255),
-
-                TextInput::make('nama_tombol_aksi')
-                    ->label('Nama Tombol Aksi')
-                    ->required()
-                    ->maxLength(255),
-
-                TextInput::make('url_aksi')
-                    ->label('URL Aksi')
-                    ->required()
-                    ->url()
-                    ->maxLength(255),
+                    ->preserveFilenames(),
 
                 TextInput::make('title')
                     ->label('Title')
@@ -48,8 +30,16 @@ class HeaderForm
                 Textarea::make('description')
                     ->label('Description')
                     ->rows(3)
-                    ->required()
-                    ->maxLength(255)
+                    ->maxLength(255),
+
+                TextInput::make('button_text')
+                    ->label('Button Text')
+                    ->maxLength(255),
+
+                TextInput::make('button_url')
+                    ->label('Button URL')
+                    ->url()
+                    ->maxLength(255),
             ]);
     }
 }
