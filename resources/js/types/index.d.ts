@@ -50,3 +50,41 @@ export interface Blog {
     image_url: string;
     created_at: string;
 }
+
+export interface Video {
+    id: number;
+    title: string;
+    description: string;
+    url: string;
+}
+
+export interface Staff {
+    id: number;
+    name: string;
+    role: string;
+    role_detail: string;
+    nip: string;
+    phone: string | null;
+    image_path: string | null;
+    joined_date: string;
+    status: 'active' | 'inactive';
+}
+
+export interface StudentCount {
+    id: number;
+    angkatan: string;
+    ma: number;
+    mts: number;
+    wustha: number;
+    ulya: number;
+    total_siswa: number;
+}
+
+export interface Header {
+    id: number;
+    title: string;
+    description: string;
+    button_text: string | null;
+    button_url: string | null;
+    image_url: string | null;
+}
