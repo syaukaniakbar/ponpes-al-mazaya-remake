@@ -32,7 +32,27 @@ const VideoCard: React.FC<Props> = ({ videos }) => {
 
     if (validVideos.length === 0) {
         return (
-            <section id="headers" className="mt-18 bg-gray-50 py-24">
+            <section id="headers" className="bg-gray-50 py-64">
+                <motion.div className="mb-24 text-center">
+                    <motion.p
+                        initial={{ opacity: 0, y: 10 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6, ease: 'easeOut' }}
+                        viewport={{ once: true }}
+                        className="text-sm font-medium tracking-wide text-green-600 uppercase"
+                    >
+                        Galeri Video
+                    </motion.p>
+                    <motion.h2
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6, ease: 'easeOut' }}
+                        viewport={{ once: true }}
+                        className="mt-2 text-4xl font-bold text-gray-900 md:text-5xl"
+                    >
+                        Al Mazaya <span className="text-green-600">Introduction</span>
+                    </motion.h2>
+                </motion.div>
                 <div className="text-center text-gray-500">Tidak ada video yang tersedia.</div>
             </section>
         );
