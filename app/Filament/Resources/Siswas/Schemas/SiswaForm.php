@@ -243,11 +243,11 @@ class SiswaForm
                 Select::make('status_pendaftaran')
                     ->label('Status Pendaftaran')
                     ->options([
-                        'menunggu verifikasi' => 'Menunggu Verifikasi',
+                        'menunggu-verifikasi' => 'Menunggu Verifikasi',
                         'diterima' => 'Diterima',
                         'ditolak' => 'Ditolak',
                     ])
-                    ->default('menunggu verifikasi')
+                    ->default('menunggu-verifikasi')
                     ->required()
                     ->native(false)
                     ->columnSpanFull(),

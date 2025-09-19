@@ -16,51 +16,70 @@ class SiswaController extends Controller
     // simpan data siswa
     public function store(Request $request)
     {
+        // Validasi
         $validated = $request->validate([
+            'nisn' => 'required|string|max:20|unique:siswa,nisn',
             'nama' => 'required|string|max:255',
             'program_pendidikan' => 'required|string|max:50',
-            'nik' => 'required|string|max:20',
+            'nik' => 'required|string|max:20|unique:siswa,nik',
             'nomor_kk' => 'required|string|max:20',
             'tempat_lahir' => 'required|string|max:100',
             'tanggal_lahir' => 'required|date',
             'jenis_kelamin' => 'required|in:L,P',
             'alamat_domisili' => 'required|string',
-            'provinsi' => 'nullable|string|max:100',
-            'kota' => 'nullable|string|max:100',
-            'kecamatan' => 'nullable|string|max:100',
-            'kelurahan' => 'nullable|string|max:100',
+            'provinsi' => 'required|string|max:100',
+            'kota' => 'required|string|max:100',
+            'kecamatan' => 'required|string|max:100',
+            'kelurahan' => 'required|string|max:100',
             'jumlah_saudara' => 'nullable|integer|min:0',
             'anak_ke' => 'nullable|integer|min:1',
-            'asal_sekolah' => 'nullable|string|max:100',
+            'asal_sekolah' => 'required|string|max:100',
             'nama_ayah' => 'required|string|max:100',
-            'nik_ayah' => 'nullable|string|max:20',
-            'pendidikan_ayah' => 'nullable|string|max:50',
-            'pekerjaan_ayah' => 'nullable|string|max:100',
+            'nik_ayah' => 'required|string|max:20',
+            'pendidikan_ayah' => 'required|string|max:50',
+            'pekerjaan_ayah' => 'required|string|max:100',
             'nama_ibu' => 'required|string|max:100',
-            'nik_ibu' => 'nullable|string|max:20',
-            'pendidikan_ibu' => 'nullable|string|max:50',
-            'pekerjaan_ibu' => 'nullable|string|max:100',
+            'nik_ibu' => 'required|string|max:20',
+            'pendidikan_ibu' => 'required|string|max:50',
+            'pekerjaan_ibu' => 'required|string|max:100',
             'penghasilan' => 'nullable|string|max:50',
-            'alamat_kk' => 'nullable|string',
+            'alamat_kk' => 'required|string',
             'no_hp_orangtua' => 'required|string|max:20',
             'kopiah' => 'nullable|integer|min:0',
-            'seragam' => 'nullable|string|max:10',
-            'nama_pengirim' => 'nullable|string|max:100',
-            'image_bukti_transaksi_url' => 'nullable|string|max:255',
-            'status_pendaftaran' => 'nullable|string|max:20',
+            'seragam' => 'required|string|max:10',
+            'nama_pengirim' => 'required|string|max:100',
+            'image_bukti_transaksi_url' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        // Set default status pendaftaran if not provided
-        $validated['status_pendaftaran'] = $validated['status_pendaftaran'] ?? 'pending';
-        // Set default image_bukti_transaksi_url if not provided
-        $validated['image_bukti_transaksi_url'] = $validated['image_bukti_transaksi_url'] ?? '';
+        // Default status pendaftaran
+        $validated['status_pendaftaran'] = 'menunggu-verifikasi';
 
+         // Handle file upload — guaranteed to exist due to 'required' rule
+        try {
+            $file = $request->file('image_bukti_transaksi_url');
+            $filePath = $file->store('bukti_transaksi', 'public');
+            $validated['bukti_transaksi_path'] = $filePath; // 👈 Renamed for clarity (see migration note below)
+        } catch (\Exception $e) {
+            Log::error('File upload failed during student registration: ' . $e->getMessage());
+            return back()->withErrors([
+                'image_bukti_transaksi_url' => 'Gagal mengunggah bukti transaksi. Silakan coba lagi.'
+            ])->withInput();
+        }
+
+        // Simpan ke database
         $siswa = Siswa::create($validated);
 
-        // Redirect to success page
-        return redirect()->route('pendaftaran.register.success')
-                         ->with('success', 'Pendaftaran berhasil!')
-                         ->with('siswa_id', $siswa->id);
+        // Redirect ke success page dengan data siswa
+       return Inertia::render('register-success', [
+            'success' => 'Pendaftaran berhasil!',
+            'siswa' => $siswa->only([
+                'id',
+                'nama',
+                'nisn',
+                'program_pendidikan',
+                'status_pendaftaran'
+            ]),
+        ]);
     }
 
     // cek status pendaftaran
@@ -68,11 +87,9 @@ class SiswaController extends Controller
     {
         return Inertia::render('register-status');
     }
-    
-    // halaman sukses pendaftaran
     public function registerSuccess()
     {
-        return Inertia::render('register.success');
+        return Inertia::render('register-success');
     }
-    
+        
 }

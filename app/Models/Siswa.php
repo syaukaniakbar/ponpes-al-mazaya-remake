@@ -44,6 +44,12 @@ class Siswa extends Model
         'status_pendaftaran'
     ];
 
+    protected $casts = [
+        'tanggal_lahir' => 'date',
+        'jumlah_saudara' => 'integer',
+        'anak_ke' => 'integer',
+        'kopiah' => 'integer',
+    ];
 
     use HasFactory;
 }
