@@ -98,6 +98,7 @@ class SiswaForm
                     })
                     ->native(false)
                     ->searchable()
+                    ->reactive()
                     ->afterStateUpdated(fn (callable $set) => $set('kota', null))
                     ->columnSpan(1),
                 Select::make('kota')
@@ -117,6 +118,7 @@ class SiswaForm
                     ->searchable()
                     ->preload()
                     ->live()
+                    ->reactive()
                     ->afterStateUpdated(fn (callable $set) => $set('kecamatan', null))
                     ->disabled(fn (callable $get) => empty($get('provinsi')))
                     ->columnSpan(1),
@@ -225,7 +227,6 @@ class SiswaForm
                     ->required()
                     ->columnSpanFull(),
 
-                // BUKTI TRANSAKSI
                 FileUpload::make('image_bukti_transaksi_url')
                     ->label('Bukti Transaksi')
                     ->image()
@@ -239,7 +240,6 @@ class SiswaForm
                     ->imagePreviewHeight('350') 
                     ->columnSpanFull(),
                 
-                // STATUS PENDAFTARAN
                 Select::make('status_pendaftaran')
                     ->label('Status Pendaftaran')
                     ->options([
