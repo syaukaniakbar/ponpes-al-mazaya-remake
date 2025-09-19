@@ -49,6 +49,7 @@ Route::prefix('pendaftaran')->name('pendaftaran.')->group(function () {
     Route::post('/', [SiswaController::class, 'store'])->name('register-store');  
 
     Route::get('/status-pendaftaran', [SiswaController::class, 'registerStatus'])->name('register-status');
+    Route::get('/success', [SiswaController::class, 'registerSuccess'])->name('register.success');
 });
 
 Route::middleware(['auth', 'verified'])->group(function () {
