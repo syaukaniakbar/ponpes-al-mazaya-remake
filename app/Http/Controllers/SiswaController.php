@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Siswa;
+use Illuminate\Support\Facades\Log;
 
 class SiswaController extends Controller
 {
@@ -49,16 +50,19 @@ class SiswaController extends Controller
             'seragam' => 'required|string|max:10',
             'nama_pengirim' => 'required|string|max:100',
             'image_bukti_transaksi_url' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ], [
+            'nisn.unique' => 'NISN sudah terdaftar.',
+            'nik.unique' => 'NIK sudah terdaftar.',
         ]);
 
         // Default status pendaftaran
-        $validated['status_pendaftaran'] = 'menunggu-verifikasi';
+        $validated['status_pendaftaran'] = 'menunggu verifikasi';
 
          // Handle file upload — guaranteed to exist due to 'required' rule
         try {
             $file = $request->file('image_bukti_transaksi_url');
             $filePath = $file->store('bukti_transaksi', 'public');
-            $validated['bukti_transaksi_path'] = $filePath; // 👈 Renamed for clarity (see migration note below)
+            $validated['image_bukti_transaksi_url'] = $filePath;
         } catch (\Exception $e) {
             Log::error('File upload failed during student registration: ' . $e->getMessage());
             return back()->withErrors([
@@ -90,6 +94,15 @@ class SiswaController extends Controller
     public function registerSuccess()
     {
         return Inertia::render('register-success');
+    }
+    
+    public function checkNisn($nisn)
+    {
+        $exists = Siswa::where('nisn', $nisn)->exists();
+        
+        return response()->json([
+            'exists' => $exists
+        ]);
     }
         
 }

@@ -521,7 +521,7 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     >
                                         <option value="">Pilih Provinsi</option>
                                         {provinces.map((province) => (
-                                            <option key={province.id} value={province.id}>
+                                            <option key={province.id} value={province.name}>
                                                 {province.name}
                                             </option>
                                         ))}
@@ -541,7 +541,7 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     >
                                         <option value="">Pilih Kota / Kabupaten</option>
                                         {cities.map((city) => (
-                                            <option key={city.id} value={city.id}>
+                                            <option key={city.id} value={city.name}>
                                                 {city.name}
                                             </option>
                                         ))}
@@ -561,7 +561,7 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     >
                                         <option value="">Pilih Kecamatan</option>
                                         {districts.map((district) => (
-                                            <option key={district.id} value={district.id}>
+                                            <option key={district.id} value={district.name}>
                                                 {district.name}
                                             </option>
                                         ))}
@@ -581,7 +581,7 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     >
                                         <option value="">Pilih Kelurahan / Desa</option>
                                         {villages.map((village) => (
-                                            <option key={village.id} value={village.id}>
+                                            <option key={village.id} value={village.name}>
                                                 {village.name}
                                             </option>
                                         ))}
