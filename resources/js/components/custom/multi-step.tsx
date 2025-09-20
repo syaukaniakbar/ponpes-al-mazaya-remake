@@ -1,7 +1,7 @@
 import { useForm } from '@inertiajs/react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { CheckCircle2 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { route } from 'ziggy-js';
 
 const steps = [
@@ -61,15 +61,15 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
         nik: string;
         nomor_kk: string;
         tempat_lahir: string;
-        tanggal_lahir: string; // YYYY-MM-DD
+        tanggal_lahir: string;
         jenis_kelamin: string;
         alamat_domisili: string;
         provinsi: string;
         kota: string;
         kecamatan: string;
         kelurahan: string;
-        jumlah_saudara: number;
-        anak_ke: number;
+        jumlah_saudara: number | null;
+        anak_ke: number | null;
         asal_sekolah: string;
         nama_ayah: string;
         nik_ayah: string;
@@ -103,8 +103,8 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
         kota: '',
         kecamatan: '',
         kelurahan: '',
-        jumlah_saudara: 0,
-        anak_ke: 0,
+        jumlah_saudara: null,
+        anak_ke: null,
         asal_sekolah: '',
         nama_ayah: '',
         nik_ayah: '',
@@ -124,15 +124,159 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
         status_pendaftaran: 'menunggu verifikasi',
     });
 
+    const [provinces, setProvinces] = useState<{ id: string; name: string }[]>([]);
+    const [cities, setCities] = useState<{ id: string; name: string }[]>([]);
+    const [districts, setDistricts] = useState<{ id: string; name: string }[]>([]);
+    const [villages, setVillages] = useState<{ id: string; name: string }[]>([]);
+
+    const [loadingProvinces, setLoadingProvinces] = useState(false);
+    const [loadingCities, setLoadingCities] = useState(false);
+    const [loadingDistricts, setLoadingDistricts] = useState(false);
+
+    // Get names for the selected IDs
+    const getSelectedProvinceName = () => {
+        const province = provinces.find((p) => p.id === data.provinsi);
+        return province ? province.name : '';
+    };
+
+    const getSelectedCityName = () => {
+        const city = cities.find((c) => c.id === data.kota);
+        return city ? city.name : '';
+    };
+
+    const getSelectedDistrictName = () => {
+        const district = districts.find((d) => d.id === data.kecamatan);
+        return district ? district.name : '';
+    };
+
+    const getSelectedVillageName = () => {
+        const village = villages.find((v) => v.id === data.kelurahan);
+        return village ? village.name : '';
+    };
+
+    // Fetch Provinces saat komponen pertama kali dimuat
+    useEffect(() => {
+        const fetchProvinces = async () => {
+            setLoadingProvinces(true);
+            try {
+                const response = await fetch('/api/regions/provinces');
+                const data = await response.json();
+                setProvinces(data);
+            } catch (error) {
+                console.error('Gagal mengambil data provinsi:', error);
+            } finally {
+                setLoadingProvinces(false);
+            }
+        };
+
+        fetchProvinces();
+    }, []);
+
+    // Fetch Cities saat provinsi dipilih
+    useEffect(() => {
+        if (!data.provinsi) {
+            setCities([]);
+            setDistricts([]);
+            setVillages([]);
+            setData('kota', '');
+            setData('kecamatan', '');
+            setData('kelurahan', '');
+            return;
+        }
+
+        const fetchCities = async () => {
+            setLoadingCities(true);
+            try {
+                const response = await fetch(`/api/regions/cities/${data.provinsi}`);
+                const dataCities = await response.json();
+                setCities(dataCities);
+                setDistricts([]);
+                setVillages([]);
+                setData('kota', '');
+                setData('kecamatan', '');
+                setData('kelurahan', '');
+            } catch (error) {
+                console.error('Gagal mengambil data kota:', error);
+            } finally {
+                setLoadingCities(false);
+            }
+        };
+
+        fetchCities();
+    }, [data.provinsi]);
+
+    // Fetch Districts saat kota dipilih
+    useEffect(() => {
+        if (!data.kota) {
+            setDistricts([]);
+            setVillages([]);
+            setData('kecamatan', '');
+            setData('kelurahan', '');
+            return;
+        }
+
+        const fetchDistricts = async () => {
+            setLoadingDistricts(true);
+            try {
+                const response = await fetch(`/api/regions/districts/${data.kota}`);
+                const dataDistricts = await response.json();
+                setDistricts(dataDistricts);
+                setVillages([]);
+                setData('kecamatan', '');
+                setData('kelurahan', '');
+            } catch (error) {
+                console.error('Gagal mengambil data kecamatan:', error);
+            } finally {
+                setLoadingDistricts(false);
+            }
+        };
+
+        fetchDistricts();
+    }, [data.kota]);
+
+    // Fetch Villages saat kecamatan dipilih
+    useEffect(() => {
+        if (!data.kecamatan) {
+            setVillages([]);
+            setData('kelurahan', '');
+            return;
+        }
+
+        const fetchVillages = async () => {
+            try {
+                const response = await fetch(`/api/regions/villages/${data.kecamatan}`);
+                const dataVillages = await response.json();
+                setVillages(dataVillages);
+                setData('kelurahan', '');
+            } catch (error) {
+                console.error('Gagal mengambil data kelurahan:', error);
+            }
+        };
+
+        fetchVillages();
+    }, [data.kecamatan]);
+
+    // Custom submit function to handle region names
     function submit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
+
         post(route('pendaftaran.register-store'), {
             forceFormData: true,
+            onBefore: () => {
+                // transform sebelum dikirim
+                setData({
+                    ...data,
+                    provinsi: getSelectedProvinceName(),
+                    kota: getSelectedCityName(),
+                    kecamatan: getSelectedDistrictName(),
+                    kelurahan: getSelectedVillageName(),
+                });
+            },
         });
     }
 
     return (
-        <div className="w-full px-4 sm:px-4">
+        <section className="w-full px-4 sm:px-4">
             <div className="mx-auto rounded-2xl bg-white p-6 shadow-md ring-1 ring-gray-100 sm:p-8">
                 {/* Header */}
                 <h1 className="mb-3 text-lg font-bold text-gray-900 sm:mb-4 sm:text-2xl">Formulir Pendaftaran</h1>
@@ -143,11 +287,11 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                 {/* Form */}
                 <form onSubmit={submit} className="space-y-10 text-black sm:space-y-12">
                     {/* Informasi Pribadi */}
-                    <section>
+                    <div>
                         <h2 className="mb-6 border-b pb-2 text-base font-semibold text-gray-800 sm:text-lg">Informasi Pribadi</h2>
                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                             {/* NISN */}
-                            <div className="mb-4">
+                            <div className="mb-4 md:col-span-2">
                                 <label htmlFor="nisn" className="mb-2 block text-sm font-medium text-gray-900">
                                     NISN
                                 </label>
@@ -157,20 +301,35 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                         type="text"
                                         name="nisn"
                                         value={data.nisn}
-                                        onChange={(e) => setData('nisn', e.target.value)}
+                                        onChange={(e) => {
+                                            // hanya angka
+                                            const value = e.target.value.replace(/\D/g, '');
+
+                                            // maksimal 10 digit
+                                            if (value.length <= 10) {
+                                                setData('nisn', value);
+                                            }
+                                        }}
                                         placeholder="Nomor Induk Siswa Nasional"
+                                        maxLength={10} // safeguard
+                                        inputMode="numeric" // keypad angka di HP
+                                        pattern="\d{10}" // HTML5 validasi: wajib 10 digit
                                         className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
                                     />
                                     <button
                                         type="button"
-                                        className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 focus:outline-none"
+                                        className="rounded-lg bg-indigo-600 px-6 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 focus:outline-none"
                                     >
                                         CEK NISN
                                     </button>
                                 </div>
+
                                 {errors.nisn && <div className="mt-1 text-sm text-red-700">{errors.nisn}</div>}
                             </div>
+                        </div>
 
+                        {/* Nama Lengkap */}
+                        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                             {/* Nama Lengkap */}
                             <div className="md:col-span-2">
                                 <label className="mb-2 block text-sm font-medium text-gray-900">Nama Lengkap (Sesuai Akta/KTP)</label>
@@ -182,140 +341,159 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     placeholder="Nama Pendaftar"
                                     className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
                                 />
-                                {errors.nama && <div className="mt-2 inline-block rounded bg-red-700 p-2 text-sm text-white">{errors.nama}</div>}
+                                {errors.nama && <p className="mt-2 text-sm text-red-600">{errors.nama}</p>}
+                            </div>
+
+                            {/* Program Pendidikan */}
+                            <div>
+                                <label className="mb-2 block text-sm font-medium text-gray-900">Program Pendidikan</label>
+                                <select
+                                    name="program_pendidikan"
+                                    value={data.program_pendidikan}
+                                    onChange={(e) => setData('program_pendidikan', e.target.value)}
+                                    className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
+                                >
+                                    <option value="">Pilih Program Pendidikan</option>
+                                    <option value="ma">MA</option>
+                                    <option value="mts">MTs</option>
+                                    <option value="wustha">Wustha</option>
+                                    <option value="ulya">Ulya</option>
+                                </select>
+                                {errors.program_pendidikan && <p className="mt-2 text-sm text-red-600">{errors.program_pendidikan}</p>}
+                            </div>
+
+                            {/* NIK */}
+                            <div>
+                                <label className="mb-2 block text-sm font-medium text-gray-900">Nomor Induk Kependudukan (NIK)</label>
+                                <input
+                                    type="text"
+                                    name="nik"
+                                    value={data.nik}
+                                    onChange={(e) => {
+                                        // hanya angka
+                                        const value = e.target.value.replace(/\D/g, '');
+
+                                        // maksimal 16 digit
+                                        if (value.length <= 16) {
+                                            setData('nik', value);
+                                        }
+                                    }}
+                                    placeholder="Masukkan NIK"
+                                    maxLength={16} // tambahan pembatas
+                                    inputMode="numeric" // agar di HP muncul keypad angka
+                                    pattern="\d{16}" // HTML5 pattern: validasi 16 digit
+                                    className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
+                                />
+                                {errors.nik && <p className="mt-2 text-sm text-red-600">{errors.nik}</p>}
+                            </div>
+
+                            {/* Nomor KK */}
+                            <div>
+                                <label className="mb-2 block text-sm font-medium text-gray-900">Nomor Kartu Keluarga</label>
+                                <input
+                                    type="text"
+                                    name="nomor_kk"
+                                    value={data.nomor_kk}
+                                    onChange={(e) => {
+                                        // hanya angka
+                                        const value = e.target.value.replace(/\D/g, '');
+
+                                        // maksimal 16 digit
+                                        if (value.length <= 16) {
+                                            setData('nomor_kk', value);
+                                        }
+                                    }}
+                                    placeholder="Masukkan Nomor KK"
+                                    maxLength={16} // safeguard
+                                    inputMode="numeric" // agar keypad HP angka
+                                    pattern="\d{16}" // HTML5 pattern: wajib 16 digit
+                                    className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
+                                />
+
+                                {errors.nomor_kk && <p className="mt-2 text-sm text-red-600">{errors.nomor_kk}</p>}
+                            </div>
+
+                            {/* Tempat Lahir */}
+                            <div>
+                                <label className="mb-2 block text-sm font-medium text-gray-900">Tempat Lahir</label>
+                                <input
+                                    type="text"
+                                    name="tempat_lahir"
+                                    value={data.tempat_lahir}
+                                    onChange={(e) => setData('tempat_lahir', e.target.value)}
+                                    placeholder="Masukkan Tempat Lahir"
+                                    className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
+                                />
+                                {errors.tempat_lahir && <p className="mt-2 text-sm text-red-600">{errors.tempat_lahir}</p>}
+                            </div>
+
+                            {/* Tanggal Lahir */}
+                            <div>
+                                <label className="mb-2 block text-sm font-medium text-gray-900">Tanggal Lahir</label>
+                                <input
+                                    type="date"
+                                    name="tanggal_lahir"
+                                    value={data.tanggal_lahir}
+                                    onChange={(e) => setData('tanggal_lahir', e.target.value)}
+                                    onClick={(e) => {
+                                        const input = e.target as HTMLInputElement;
+                                        if (input.showPicker) {
+                                            input.showPicker();
+                                        }
+                                    }}
+                                    className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
+                                />
+                                {errors.tanggal_lahir && <p className="mt-2 text-sm text-red-600">{errors.tanggal_lahir}</p>}
+                            </div>
+
+                            {/* Jumlah Saudara */}
+                            <div>
+                                <label className="mb-2 block text-sm font-medium text-gray-900">Jumlah Saudara</label>
+                                <input
+                                    type="number"
+                                    name="jumlah_saudara"
+                                    value={data.jumlah_saudara}
+                                    onChange={(e) => setData('jumlah_saudara', Number(e.target.value))}
+                                    placeholder="Masukkan Jumlah Saudara"
+                                    className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
+                                />
+                                {errors.jumlah_saudara && <p className="mt-2 text-sm text-red-600">{errors.jumlah_saudara}</p>}
+                            </div>
+
+                            {/* Anak Ke */}
+                            <div>
+                                <label className="mb-2 block text-sm font-medium text-gray-900">Anak ke-</label>
+                                <input
+                                    type="number"
+                                    name="anak_ke"
+                                    value={data.anak_ke}
+                                    onChange={(e) => setData('anak_ke', Number(e.target.value))}
+                                    placeholder="Masukkan Anak Ke-"
+                                    className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
+                                />
+                                {errors.anak_ke && <p className="mt-2 text-sm text-red-600">{errors.anak_ke}</p>}
+                            </div>
+
+                            {/* Jenis Kelamin */}
+                            <div>
+                                <label className="mb-2 block text-sm font-medium text-gray-900">Jenis Kelamin</label>
+                                <select
+                                    name="jenis_kelamin"
+                                    value={data.jenis_kelamin}
+                                    onChange={(e) => setData('jenis_kelamin', e.target.value)}
+                                    className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
+                                >
+                                    <option value="">Pilih Jenis Kelamin</option>
+                                    <option value="L">Laki-laki</option>
+                                    <option value="P">Perempuan</option>
+                                </select>
+                                {errors.jenis_kelamin && <p className="mt-2 text-sm text-red-600">{errors.jenis_kelamin}</p>}
                             </div>
                         </div>
-
-                        {/* Program Pendidikan */}
-                        <div>
-                            <label className="mb-2 block text-sm font-medium text-gray-900">Program Pendidikan</label>
-                            <select
-                                name="program_pendidikan"
-                                value={data.program_pendidikan}
-                                onChange={(e) => setData('program_pendidikan', e.target.value)}
-                                className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
-                            >
-                                <option value="">Pilih Program Pendidikan</option>
-                                <option value="ma">MA</option>
-                                <option value="mts">MTs</option>
-                                <option value="wustha">Wustha</option>
-                                <option value="ulya">Ulya</option>
-                            </select>
-                            {errors.program_pendidikan && (
-                                <div className="mt-2 inline-block rounded bg-red-700 p-2 text-sm text-white">{errors.program_pendidikan}</div>
-                            )}
-                        </div>
-
-                        {/* Tanggal Lahir */}
-                        <div>
-                            <label className="mb-2 block text-sm font-medium text-gray-900">Tanggal Lahir</label>
-                            <input
-                                type="date"
-                                name="tanggal_lahir"
-                                value={data.tanggal_lahir}
-                                onChange={(e) => setData('tanggal_lahir', e.target.value)}
-                                className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
-                            />
-                            {errors.tanggal_lahir && (
-                                <div className="mt-2 inline-block rounded bg-red-700 p-2 text-sm text-white">{errors.tanggal_lahir}</div>
-                            )}
-                        </div>
-
-                        {/* NIK */}
-                        <div>
-                            <label className="mb-2 block text-sm font-medium text-gray-900">Nomor Induk Kependudukan (NIK)</label>
-                            <input
-                                type="text"
-                                name="nik"
-                                value={data.nik}
-                                onChange={(e) => setData('nik', e.target.value)}
-                                placeholder="Masukkan NIK"
-                                className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
-                            />
-                            {errors.nik && <div className="mt-2 inline-block rounded bg-red-700 p-2 text-sm text-white">{errors.nik}</div>}
-                        </div>
-
-                        {/* Nomor KK */}
-                        <div>
-                            <label className="mb-2 block text-sm font-medium text-gray-900">Nomor Kartu Keluarga</label>
-                            <input
-                                type="text"
-                                name="nomor_kk"
-                                value={data.nomor_kk}
-                                onChange={(e) => setData('nomor_kk', e.target.value)}
-                                placeholder="Masukkan Nomor KK"
-                                className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
-                            />
-                            {errors.nomor_kk && <div className="mt-2 inline-block rounded bg-red-700 p-2 text-sm text-white">{errors.nomor_kk}</div>}
-                        </div>
-
-                        {/* Tempat Lahir */}
-                        <div>
-                            <label className="mb-2 block text-sm font-medium text-gray-900">Tempat Lahir</label>
-                            <input
-                                type="text"
-                                name="tempat_lahir"
-                                value={data.tempat_lahir}
-                                onChange={(e) => setData('tempat_lahir', e.target.value)}
-                                placeholder="Masukkan Tempat Lahir"
-                                className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
-                            />
-                            {errors.tempat_lahir && (
-                                <div className="mt-2 inline-block rounded bg-red-700 p-2 text-sm text-white">{errors.tempat_lahir}</div>
-                            )}
-                        </div>
-
-                        {/* Jumlah Saudara */}
-                        <div>
-                            <label className="mb-2 block text-sm font-medium text-gray-900">Jumlah Saudara</label>
-                            <input
-                                type="number"
-                                name="jumlah_saudara"
-                                value={data.jumlah_saudara}
-                                onChange={(e) => setData('jumlah_saudara', Number(e.target.value))}
-                                placeholder="Masukkan Jumlah Saudara"
-                                className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
-                            />
-                            {errors.jumlah_saudara && (
-                                <div className="mt-2 inline-block rounded bg-red-700 p-2 text-sm text-white">{errors.jumlah_saudara}</div>
-                            )}
-                        </div>
-
-                        {/* Anak Ke */}
-                        <div>
-                            <label className="mb-2 block text-sm font-medium text-gray-900">Anak ke-</label>
-                            <input
-                                type="number"
-                                name="anak_ke"
-                                value={data.anak_ke}
-                                onChange={(e) => setData('anak_ke', Number(e.target.value))}
-                                placeholder="Masukkan Anak Ke-"
-                                className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
-                            />
-                            {errors.anak_ke && <div className="mt-2 inline-block rounded bg-red-700 p-2 text-sm text-white">{errors.anak_ke}</div>}
-                        </div>
-
-                        {/* Jenis Kelamin */}
-                        <div>
-                            <label className="mb-2 block text-sm font-medium text-gray-900">Jenis Kelamin</label>
-                            <select
-                                name="jenis_kelamin"
-                                value={data.jenis_kelamin}
-                                onChange={(e) => setData('jenis_kelamin', e.target.value)}
-                                className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
-                            >
-                                <option value="">Pilih Jenis Kelamin</option>
-                                <option value="L">Laki-laki</option>
-                                <option value="P">Perempuan</option>
-                            </select>
-                            {errors.jenis_kelamin && (
-                                <div className="mt-2 inline-block rounded bg-red-700 p-2 text-sm text-white">{errors.jenis_kelamin}</div>
-                            )}
-                        </div>
-                    </section>
+                    </div>
 
                     {/* Kontak & Alamat */}
-                    <section>
+                    <div>
                         <h2 className="mb-6 border-b pb-2 text-base font-semibold text-gray-800 sm:text-lg">Kontak & Alamat</h2>
                         <div className="space-y-6">
                             {/* Alamat */}
@@ -325,80 +503,97 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     name="alamat_domisili"
                                     value={data.alamat_domisili}
                                     onChange={(e) => setData('alamat_domisili', e.target.value)}
-                                    placeholder="Contoh: Jalan Mawar No. 12, Kelurahan Suka Maju, ..."
+                                    placeholder="Contoh: Jl. Pangeran Antasari No. 45 RT 03/RW 05, Kel. Air Putih, Kec. Samarinda Ulu, Kota Samarinda, Kalimantan Timur, 75119"
                                     className="min-h-[100px] w-full resize-y rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
                                 />
-                                {errors.alamat_domisili && (
-                                    <div className="mt-2 inline-block rounded bg-red-700 p-2 text-sm text-white">{errors.alamat_domisili}</div>
-                                )}
+                                {errors.alamat_domisili && <div className="mt-1 text-sm text-red-700">{errors.alamat_domisili}</div>}
                             </div>
+                            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                {/* Provinsi */}
+                                <div>
+                                    <label className="mb-2 block text-sm font-medium text-gray-900">Provinsi</label>
+                                    <select
+                                        name="provinsi"
+                                        value={data.provinsi}
+                                        onChange={(e) => setData('provinsi', e.target.value)}
+                                        className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
+                                        disabled={loadingProvinces}
+                                    >
+                                        <option value="">Pilih Provinsi</option>
+                                        {provinces.map((province) => (
+                                            <option key={province.id} value={province.id}>
+                                                {province.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    {errors.provinsi && <div className="mt-1 text-sm text-red-700">{errors.provinsi}</div>}
+                                </div>
 
-                            {/* Provinsi */}
-                            <div>
-                                <label className="mb-2 block text-sm font-medium text-gray-900">Provinsi</label>
-                                <input
-                                    type="text"
-                                    name="provinsi"
-                                    value={data.provinsi}
-                                    onChange={(e) => setData('provinsi', e.target.value)}
-                                    placeholder="Provinsi"
-                                    className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
-                                />
-                                {errors.provinsi && (
-                                    <div className="mt-2 inline-block rounded bg-red-700 p-2 text-sm text-white">{errors.provinsi}</div>
-                                )}
-                            </div>
+                                {/* Kota */}
+                                <div>
+                                    <label className="mb-2 block text-sm font-medium text-gray-900">Kota / Kabupaten</label>
+                                    <select
+                                        name="kota"
+                                        value={data.kota}
+                                        onChange={(e) => setData('kota', e.target.value)}
+                                        className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
+                                        disabled={loadingCities || !data.provinsi}
+                                    >
+                                        <option value="">Pilih Kota / Kabupaten</option>
+                                        {cities.map((city) => (
+                                            <option key={city.id} value={city.id}>
+                                                {city.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    {errors.kota && <div className="mt-1 text-sm text-red-700">{errors.kota}</div>}
+                                </div>
 
-                            {/* Kota */}
-                            <div>
-                                <label className="mb-2 block text-sm font-medium text-gray-900">Kota / Kabupaten</label>
-                                <input
-                                    type="text"
-                                    name="kota"
-                                    value={data.kota}
-                                    onChange={(e) => setData('kota', e.target.value)}
-                                    placeholder="Kota / Kabupaten"
-                                    className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
-                                />
-                                {errors.kota && <div className="mt-2 inline-block rounded bg-red-700 p-2 text-sm text-white">{errors.kota}</div>}
-                            </div>
+                                {/* Kecamatan */}
+                                <div>
+                                    <label className="mb-2 block text-sm font-medium text-gray-900">Kecamatan</label>
+                                    <select
+                                        name="kecamatan"
+                                        value={data.kecamatan}
+                                        onChange={(e) => setData('kecamatan', e.target.value)}
+                                        className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
+                                        disabled={loadingDistricts || !data.kota}
+                                    >
+                                        <option value="">Pilih Kecamatan</option>
+                                        {districts.map((district) => (
+                                            <option key={district.id} value={district.id}>
+                                                {district.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    {errors.kecamatan && <div className="mt-1 text-sm text-red-700">{errors.kecamatan}</div>}
+                                </div>
 
-                            {/* Kecamatan */}
-                            <div>
-                                <label className="mb-2 block text-sm font-medium text-gray-900">Kecamatan</label>
-                                <input
-                                    type="text"
-                                    name="kecamatan"
-                                    value={data.kecamatan}
-                                    onChange={(e) => setData('kecamatan', e.target.value)}
-                                    placeholder="Kecamatan"
-                                    className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
-                                />
-                                {errors.kecamatan && (
-                                    <div className="mt-2 inline-block rounded bg-red-700 p-2 text-sm text-white">{errors.kecamatan}</div>
-                                )}
-                            </div>
-
-                            {/* Kelurahan */}
-                            <div>
-                                <label className="mb-2 block text-sm font-medium text-gray-900">Kelurahan / Desa</label>
-                                <input
-                                    type="text"
-                                    name="kelurahan"
-                                    value={data.kelurahan}
-                                    onChange={(e) => setData('kelurahan', e.target.value)}
-                                    placeholder="Kelurahan / Desa"
-                                    className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
-                                />
-                                {errors.kelurahan && (
-                                    <div className="mt-2 inline-block rounded bg-red-700 p-2 text-sm text-white">{errors.kelurahan}</div>
-                                )}
+                                {/* Kelurahan */}
+                                <div>
+                                    <label className="mb-2 block text-sm font-medium text-gray-900">Kelurahan / Desa</label>
+                                    <select
+                                        name="kelurahan"
+                                        value={data.kelurahan}
+                                        onChange={(e) => setData('kelurahan', e.target.value)}
+                                        className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
+                                        disabled={!data.kecamatan}
+                                    >
+                                        <option value="">Pilih Kelurahan / Desa</option>
+                                        {villages.map((village) => (
+                                            <option key={village.id} value={village.id}>
+                                                {village.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    {errors.kelurahan && <div className="mt-1 text-sm text-red-700">{errors.kelurahan}</div>}
+                                </div>
                             </div>
                         </div>
-                    </section>
+                    </div>
 
                     {/* Sekolah Asal */}
-                    <section>
+                    <div>
                         <h2 className="mb-6 border-b pb-2 text-base font-semibold text-gray-800 sm:text-lg">Sekolah Asal</h2>
                         <div className="grid grid-cols-1 gap-6">
                             <div>
@@ -411,16 +606,14 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     placeholder="Nama Sekolah Asal"
                                     className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
                                 />
-                                {errors.asal_sekolah && (
-                                    <div className="mt-2 inline-block rounded bg-red-700 p-2 text-sm text-white">{errors.asal_sekolah}</div>
-                                )}
+                                {errors.asal_sekolah && <div className="mt-1 text-sm text-red-700">{errors.asal_sekolah}</div>}
                             </div>
                         </div>
-                    </section>
+                    </div>
 
-                    {/* Data Orang Tua */}
-                    <section>
-                        <h2 className="mb-6 border-b pb-2 text-base font-semibold text-gray-800 sm:text-lg">Data Orang Tua</h2>
+                    {/* Data Ayah */}
+                    <div>
+                        <h2 className="mb-6 border-b pb-2 text-base font-semibold text-gray-800 sm:text-lg">Data Ayah</h2>
                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                             {/* Nama Ayah */}
                             <div>
@@ -433,9 +626,7 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     placeholder="Nama Ayah"
                                     className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
                                 />
-                                {errors.nama_ayah && (
-                                    <div className="mt-2 inline-block rounded bg-red-700 p-2 text-sm text-white">{errors.nama_ayah}</div>
-                                )}
+                                {errors.nama_ayah && <div className="mt-1 text-sm text-red-700">{errors.nama_ayah}</div>}
                             </div>
 
                             {/* NIK Ayah */}
@@ -445,29 +636,49 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     type="text"
                                     name="nik_ayah"
                                     value={data.nik_ayah}
-                                    onChange={(e) => setData('nik_ayah', e.target.value)}
+                                    onChange={(e) => {
+                                        // allow only numbers
+                                        const value = e.target.value.replace(/\D/g, '');
+
+                                        // limit to 16 digits
+                                        if (value.length <= 16) {
+                                            setData('nik_ayah', value);
+                                        }
+                                    }}
                                     placeholder="NIK Ayah"
+                                    maxLength={16} // just in case
+                                    inputMode="numeric" // mobile keyboard will show numbers
+                                    pattern="\d{16}" // HTML5 validation pattern (16 digits)
                                     className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
                                 />
-                                {errors.nik_ayah && (
-                                    <div className="mt-2 inline-block rounded bg-red-700 p-2 text-sm text-white">{errors.nik_ayah}</div>
-                                )}
+
+                                {errors.nik_ayah && <div className="mt-1 text-sm text-red-700">{errors.nik_ayah}</div>}
                             </div>
 
                             {/* Pendidikan Ayah */}
                             <div>
                                 <label className="mb-2 block text-sm font-medium text-gray-900">Pendidikan Terakhir Ayah</label>
-                                <input
-                                    type="text"
+                                <select
                                     name="pendidikan_ayah"
                                     value={data.pendidikan_ayah}
                                     onChange={(e) => setData('pendidikan_ayah', e.target.value)}
-                                    placeholder="Pendidikan Terakhir Ayah"
                                     className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
-                                />
-                                {errors.pendidikan_ayah && (
-                                    <div className="mt-2 inline-block rounded bg-red-700 p-2 text-sm text-white">{errors.pendidikan_ayah}</div>
-                                )}
+                                >
+                                    <option value="">Pilih Pendidikan Terakhir</option>
+                                    <option value="sd">SD / Sederajat</option>
+                                    <option value="smp">SMP / Sederajat</option>
+                                    <option value="sma">SMA / Sederajat</option>
+                                    <option value="d1">Diploma I (D1)</option>
+                                    <option value="d2">Diploma II (D2)</option>
+                                    <option value="d3">Diploma III (D3)</option>
+                                    <option value="d4">Diploma IV (D4)</option>
+                                    <option value="s1">Sarjana (S1)</option>
+                                    <option value="s2">Magister (S2)</option>
+                                    <option value="s3">Doktor (S3)</option>
+                                    <option value="lainnya">Lainnya</option>
+                                </select>
+
+                                {errors.pendidikan_ayah && <div className="mt-1 text-sm text-red-700">{errors.pendidikan_ayah}</div>}
                             </div>
 
                             {/* Pekerjaan Ayah */}
@@ -481,12 +692,10 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     placeholder="Pekerjaan Ayah"
                                     className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
                                 />
-                                {errors.pekerjaan_ayah && (
-                                    <div className="mt-2 inline-block rounded bg-red-700 p-2 text-sm text-white">{errors.pekerjaan_ayah}</div>
-                                )}
+                                {errors.pekerjaan_ayah && <div className="mt-1 text-sm text-red-700">{errors.pekerjaan_ayah}</div>}
                             </div>
 
-                            <hr className="col-span-2 my-4 border-t border-gray-200" />
+                            <h2 className="col-span-2 border-b pb-2 text-base font-semibold text-gray-800 sm:text-lg">Data Ibu</h2>
 
                             {/* Nama Ibu */}
                             <div>
@@ -499,9 +708,7 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     placeholder="Nama Ibu"
                                     className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
                                 />
-                                {errors.nama_ibu && (
-                                    <div className="mt-2 inline-block rounded bg-red-700 p-2 text-sm text-white">{errors.nama_ibu}</div>
-                                )}
+                                {errors.nama_ibu && <div className="mt-1 text-sm text-red-700">{errors.nama_ibu}</div>}
                             </div>
 
                             {/* NIK Ibu */}
@@ -511,29 +718,49 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     type="text"
                                     name="nik_ibu"
                                     value={data.nik_ibu}
-                                    onChange={(e) => setData('nik_ibu', e.target.value)}
+                                    onChange={(e) => {
+                                        // hanya angka
+                                        const value = e.target.value.replace(/\D/g, '');
+
+                                        // maksimal 16 digit
+                                        if (value.length <= 16) {
+                                            setData('nik_ibu', value);
+                                        }
+                                    }}
                                     placeholder="NIK Ibu"
+                                    maxLength={16} // extra safeguard
+                                    inputMode="numeric" // supaya di HP muncul keyboard angka
+                                    pattern="\d{16}" // HTML5 pattern: wajib 16 digit
                                     className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
                                 />
-                                {errors.nik_ibu && (
-                                    <div className="mt-2 inline-block rounded bg-red-700 p-2 text-sm text-white">{errors.nik_ibu}</div>
-                                )}
+
+                                {errors.nik_ibu && <div className="mt-1 text-sm text-red-700">{errors.nik_ibu}</div>}
                             </div>
 
                             {/* Pendidikan Ibu */}
                             <div>
                                 <label className="mb-2 block text-sm font-medium text-gray-900">Pendidikan Terakhir Ibu</label>
-                                <input
-                                    type="text"
+                                <select
                                     name="pendidikan_ibu"
                                     value={data.pendidikan_ibu}
                                     onChange={(e) => setData('pendidikan_ibu', e.target.value)}
-                                    placeholder="Pendidikan Terakhir Ibu"
                                     className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
-                                />
-                                {errors.pendidikan_ibu && (
-                                    <div className="mt-2 inline-block rounded bg-red-700 p-2 text-sm text-white">{errors.pendidikan_ibu}</div>
-                                )}
+                                >
+                                    <option value="">Pilih Pendidikan Terakhir</option>
+                                    <option value="sd">SD / Sederajat</option>
+                                    <option value="smp">SMP / Sederajat</option>
+                                    <option value="sma">SMA / Sederajat</option>
+                                    <option value="d1">Diploma I (D1)</option>
+                                    <option value="d2">Diploma II (D2)</option>
+                                    <option value="d3">Diploma III (D3)</option>
+                                    <option value="d4">Diploma IV (D4)</option>
+                                    <option value="s1">Sarjana (S1)</option>
+                                    <option value="s2">Magister (S2)</option>
+                                    <option value="s3">Doktor (S3)</option>
+                                    <option value="lainnya">Lainnya</option>
+                                </select>
+
+                                {errors.pendidikan_ibu && <div className="mt-1 text-sm text-red-700">{errors.pendidikan_ibu}</div>}
                             </div>
 
                             {/* Pekerjaan Ibu */}
@@ -547,25 +774,28 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     placeholder="Pekerjaan Ibu"
                                     className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
                                 />
-                                {errors.pekerjaan_ibu && (
-                                    <div className="mt-2 inline-block rounded bg-red-700 p-2 text-sm text-white">{errors.pekerjaan_ibu}</div>
-                                )}
+                                {errors.pekerjaan_ibu && <div className="mt-1 text-sm text-red-700">{errors.pekerjaan_ibu}</div>}
                             </div>
 
                             {/* Penghasilan */}
                             <div className="md:col-span-2">
                                 <label className="mb-2 block text-sm font-medium text-gray-900">Penghasilan Orang Tua (Rp)</label>
-                                <input
-                                    type="number"
+                                <select
                                     name="penghasilan"
                                     value={data.penghasilan}
                                     onChange={(e) => setData('penghasilan', e.target.value)}
-                                    placeholder="Penghasilan Orang Tua"
                                     className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
-                                />
-                                {errors.penghasilan && (
-                                    <div className="mt-2 inline-block rounded bg-red-700 p-2 text-sm text-white">{errors.penghasilan}</div>
-                                )}
+                                >
+                                    <option value="">Pilih Rentang Penghasilan</option>
+                                    <option value="income_1">Kurang dari Rp 500.000</option>
+                                    <option value="income_2">Rp 500.000 - Rp 1.000.000</option>
+                                    <option value="income_3">Rp 1.000.000 - Rp 2.000.000</option>
+                                    <option value="income_4">Rp 2.000.000 - Rp 3.000.000</option>
+                                    <option value="income_5">Rp 3.000.000 - Rp 5.000.000</option>
+                                    <option value="income_6">Lebih dari Rp 5.000.000</option>
+                                </select>
+
+                                {errors.penghasilan && <div className="mt-1 text-sm text-red-700">{errors.penghasilan}</div>}
                             </div>
 
                             {/* No HP Orang Tua */}
@@ -579,9 +809,7 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     placeholder="08xxxxxxxxx"
                                     className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
                                 />
-                                {errors.no_hp_orangtua && (
-                                    <div className="mt-2 inline-block rounded bg-red-700 p-2 text-sm text-white">{errors.no_hp_orangtua}</div>
-                                )}
+                                {errors.no_hp_orangtua && <div className="mt-1 text-sm text-red-700">{errors.no_hp_orangtua}</div>}
                             </div>
 
                             {/* Alamat KK */}
@@ -594,46 +822,60 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     placeholder="Alamat sesuai Kartu Keluarga"
                                     className="min-h-[100px] w-full resize-y rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
                                 />
-                                {errors.alamat_kk && (
-                                    <div className="mt-2 inline-block rounded bg-red-700 p-2 text-sm text-white">{errors.alamat_kk}</div>
-                                )}
+                                {errors.alamat_kk && <div className="mt-1 text-sm text-red-700">{errors.alamat_kk}</div>}
                             </div>
                         </div>
-                    </section>
+                    </div>
 
                     {/* Informasi Tambahan */}
-                    <section>
+                    <div>
                         <h2 className="mb-6 border-b pb-2 text-base font-semibold text-gray-800 sm:text-lg">Informasi Tambahan</h2>
                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                             {/* Ukuran Kopiah */}
                             <div>
                                 <label className="mb-2 block text-sm font-medium text-gray-900">Ukuran Kopiah</label>
-                                <input
-                                    type="number"
+                                <select
                                     name="kopiah"
-                                    value={data.kopiah ?? ''} // kalau null, tampilkan string kosong
-                                    onChange={(e) => setData('kopiah', e.target.value === '' ? null : Number(e.target.value))}
-                                    placeholder="Ukuran Kopiah"
+                                    value={data.kopiah ?? ''} // Jika null/undefined, tampilkan opsi kosong
+                                    onChange={(e) => {
+                                        const val = e.target.value;
+                                        setData('kopiah', val === '' ? null : Number(val)); // Konversi ke number, atau null jika kosong
+                                    }}
                                     className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
-                                />
-                                {errors.kopiah && <div className="mt-2 inline-block rounded bg-red-700 p-2 text-sm text-white">{errors.kopiah}</div>}
+                                >
+                                    <option value="">Pilih Ukuran Kopiah</option>
+                                    {[2, 3, 4, 5, 6, 7, 8, 9].map((size) => (
+                                        <option key={size} value={size}>
+                                            {size}
+                                        </option>
+                                    ))}
+                                </select>
+                                {errors.kopiah && <div className="mt-1 text-sm text-red-700">{errors.kopiah}</div>}
                             </div>
 
                             {/* Ukuran Seragam */}
-                            <div>
-                                <label className="mb-2 block text-sm font-medium text-gray-900">Ukuran Seragam</label>
-                                <input
-                                    type="text"
+                            <div className="mb-4">
+                                <label htmlFor="seragam" className="mb-2 block text-sm font-medium text-gray-900">
+                                    Ukuran Seragam
+                                </label>
+                                <select
+                                    id="seragam"
                                     name="seragam"
                                     value={data.seragam}
                                     onChange={(e) => setData('seragam', e.target.value)}
-                                    placeholder="Ukuran Seragam"
-                                    className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
-                                />
-                                {errors.seragam && (
-                                    <div className="mt-2 inline-block rounded bg-red-700 p-2 text-sm text-white">{errors.seragam}</div>
-                                )}
+                                    className="w-full rounded-lg border border-gray-300 px-3 py-3 text-sm shadow-sm transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
+                                >
+                                    {['S', 'M', 'L', 'XL', 'XXL', 'XXXL'].map((size) => (
+                                        <option key={size} value={size}>
+                                            {size}
+                                        </option>
+                                    ))}{' '}
+                                    {/* 👈 This was missing */}
+                                </select>{' '}
+                                {/* 👈 Moved to correct position */}
+                                {errors.seragam && <div className="mt-1 text-sm text-red-700">{errors.seragam}</div>}
                             </div>
+
                             {/* Nama Pengirim */}
                             <div className="md:col-span-2">
                                 <label className="mb-2 block text-sm font-medium text-gray-900">Nama Pengirim (Sesuai Rekening)</label>
@@ -645,9 +887,7 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     placeholder="Nama Pengirim"
                                     className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
                                 />
-                                {errors.nama_pengirim && (
-                                    <div className="mt-2 inline-block rounded bg-red-700 p-2 text-sm text-white">{errors.nama_pengirim}</div>
-                                )}
+                                {errors.nama_pengirim && <div className="mt-1 text-sm text-red-700">{errors.nama_pengirim}</div>}
                             </div>
 
                             {/* Bukti Transaksi */}
@@ -668,13 +908,11 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                 />
                                 <p className="mt-1 text-sm text-gray-500">Unggah bukti pembayaran pendaftaran</p>
                                 {errors.image_bukti_transaksi_url && (
-                                    <div className="mt-2 inline-block rounded bg-red-700 p-2 text-sm text-white">
-                                        {errors.image_bukti_transaksi_url}
-                                    </div>
+                                    <div className="mt-1 text-sm text-red-700">{errors.image_bukti_transaksi_url}</div>
                                 )}
                             </div>
                         </div>
-                    </section>
+                    </div>
 
                     {/* Submit */}
                     <div className="pt-4">
@@ -688,7 +926,7 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                     </div>
                 </form>
             </div>
-        </div>
+        </section>
     );
 };
 
