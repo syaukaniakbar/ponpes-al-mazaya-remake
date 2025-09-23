@@ -124,6 +124,11 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
         status_pendaftaran: 'menunggu verifikasi',
     });
 
+    const [nisnChecked, setNisnChecked] = useState(false);
+    const [nisnAvailable, setNisnAvailable] = useState(false);
+    const [checkingNisn, setCheckingNisn] = useState(false);
+    const [nisnError, setNisnError] = useState('');
+
     const [provinces, setProvinces] = useState<{ id: string; name: string }[]>([]);
     const [cities, setCities] = useState<{ id: string; name: string }[]>([]);
     const [districts, setDistricts] = useState<{ id: string; name: string }[]>([]);
@@ -256,6 +261,36 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
         fetchVillages();
     }, [data.kecamatan]);
 
+    // Function to check NISN availability
+    const checkNisn = async () => {
+        if (!data.nisn || data.nisn.length !== 10) {
+            setNisnError('NISN harus 10 digit');
+            return;
+        }
+
+        setCheckingNisn(true);
+        setNisnError('');
+
+        try {
+            const response = await fetch(`/api/siswa/check-nisn/${data.nisn}`);
+            const result = await response.json();
+
+            if (result.exists) {
+                setNisnAvailable(false);
+                setNisnError('NISN sudah terdaftar');
+            } else {
+                setNisnAvailable(true);
+                setNisnError('');
+                setNisnChecked(true);
+            }
+        } catch (error) {
+            setNisnAvailable(false);
+            setNisnError('Gagal memeriksa NISN. Silakan coba lagi.');
+        } finally {
+            setCheckingNisn(false);
+        }
+    };
+
     // Custom submit function to handle region names
     function submit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
@@ -274,6 +309,11 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
             },
         });
     }
+
+    console.log('Selected Provinsi:', data.provinsi);
+    console.log('Cities:', cities);
+    console.log('Districts:', districts);
+    console.log('Villages:', villages);
 
     return (
         <section className="w-full px-4 sm:px-4">
@@ -308,6 +348,11 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                             // maksimal 10 digit
                                             if (value.length <= 10) {
                                                 setData('nisn', value);
+                                                // Reset validation when user types
+                                                if (nisnChecked) {
+                                                    setNisnChecked(false);
+                                                    setNisnAvailable(false);
+                                                }
                                             }
                                         }}
                                         placeholder="Nomor Induk Siswa Nasional"
@@ -318,12 +363,22 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     />
                                     <button
                                         type="button"
-                                        className="rounded-lg bg-indigo-600 px-6 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 focus:outline-none"
+                                        onClick={checkNisn}
+                                        disabled={checkingNisn || !data.nisn || data.nisn.length !== 10}
+                                        className={`cursor-pointer rounded-lg px-6 py-2 text-sm font-semibold text-white transition-colors focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 focus:outline-none ${
+                                            checkingNisn || !data.nisn || data.nisn.length !== 10
+                                                ? 'cursor-not-allowed bg-gray-400'
+                                                : 'bg-indigo-600 hover:bg-indigo-700'
+                                        }`}
                                     >
-                                        CEK NISN
+                                        {checkingNisn ? 'MEMERIKSA...' : 'CEK NISN'}
                                     </button>
                                 </div>
-
+                                {nisnChecked && nisnAvailable && (
+                                    <div className="mt-2 inline-block rounded bg-green-700 p-2 text-sm text-white">
+                                        NISN tersedia dan dapat digunakan
+                                    </div>
+                                )}
                                 {errors.nisn && <div className="mt-1 text-sm text-red-700">{errors.nisn}</div>}
                             </div>
                         </div>
@@ -339,7 +394,10 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     value={data.nama}
                                     onChange={(e) => setData('nama', e.target.value)}
                                     placeholder="Nama Pendaftar"
-                                    className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
+                                    disabled={!nisnChecked || !nisnAvailable}
+                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
+                                        !nisnChecked || !nisnAvailable ? 'cursor-not-allowed bg-gray-100' : ''
+                                    }`}
                                 />
                                 {errors.nama && <p className="mt-2 text-sm text-red-600">{errors.nama}</p>}
                             </div>
@@ -351,7 +409,10 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     name="program_pendidikan"
                                     value={data.program_pendidikan}
                                     onChange={(e) => setData('program_pendidikan', e.target.value)}
-                                    className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
+                                    disabled={!nisnChecked || !nisnAvailable}
+                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
+                                        !nisnChecked || !nisnAvailable ? 'cursor-not-allowed bg-gray-100' : ''
+                                    }`}
                                 >
                                     <option value="">Pilih Program Pendidikan</option>
                                     <option value="ma">MA</option>
@@ -382,7 +443,10 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     maxLength={16} // tambahan pembatas
                                     inputMode="numeric" // agar di HP muncul keypad angka
                                     pattern="\d{16}" // HTML5 pattern: validasi 16 digit
-                                    className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
+                                    disabled={!nisnChecked || !nisnAvailable}
+                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
+                                        !nisnChecked || !nisnAvailable ? 'cursor-not-allowed bg-gray-100' : ''
+                                    }`}
                                 />
                                 {errors.nik && <p className="mt-2 text-sm text-red-600">{errors.nik}</p>}
                             </div>
@@ -407,7 +471,10 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     maxLength={16} // safeguard
                                     inputMode="numeric" // agar keypad HP angka
                                     pattern="\d{16}" // HTML5 pattern: wajib 16 digit
-                                    className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
+                                    disabled={!nisnChecked || !nisnAvailable}
+                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
+                                        !nisnChecked || !nisnAvailable ? 'cursor-not-allowed bg-gray-100' : ''
+                                    }`}
                                 />
 
                                 {errors.nomor_kk && <p className="mt-2 text-sm text-red-600">{errors.nomor_kk}</p>}
@@ -422,7 +489,10 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     value={data.tempat_lahir}
                                     onChange={(e) => setData('tempat_lahir', e.target.value)}
                                     placeholder="Masukkan Tempat Lahir"
-                                    className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
+                                    disabled={!nisnChecked || !nisnAvailable}
+                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
+                                        !nisnChecked || !nisnAvailable ? 'cursor-not-allowed bg-gray-100' : ''
+                                    }`}
                                 />
                                 {errors.tempat_lahir && <p className="mt-2 text-sm text-red-600">{errors.tempat_lahir}</p>}
                             </div>
@@ -441,7 +511,10 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                             input.showPicker();
                                         }
                                     }}
-                                    className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
+                                    disabled={!nisnChecked || !nisnAvailable}
+                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
+                                        !nisnChecked || !nisnAvailable ? 'cursor-not-allowed bg-gray-100' : ''
+                                    }`}
                                 />
                                 {errors.tanggal_lahir && <p className="mt-2 text-sm text-red-600">{errors.tanggal_lahir}</p>}
                             </div>
@@ -455,7 +528,10 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     value={data.jumlah_saudara}
                                     onChange={(e) => setData('jumlah_saudara', Number(e.target.value))}
                                     placeholder="Masukkan Jumlah Saudara"
-                                    className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
+                                    disabled={!nisnChecked || !nisnAvailable}
+                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
+                                        !nisnChecked || !nisnAvailable ? 'cursor-not-allowed bg-gray-100' : ''
+                                    }`}
                                 />
                                 {errors.jumlah_saudara && <p className="mt-2 text-sm text-red-600">{errors.jumlah_saudara}</p>}
                             </div>
@@ -469,7 +545,10 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     value={data.anak_ke}
                                     onChange={(e) => setData('anak_ke', Number(e.target.value))}
                                     placeholder="Masukkan Anak Ke-"
-                                    className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
+                                    disabled={!nisnChecked || !nisnAvailable}
+                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
+                                        !nisnChecked || !nisnAvailable ? 'cursor-not-allowed bg-gray-100' : ''
+                                    }`}
                                 />
                                 {errors.anak_ke && <p className="mt-2 text-sm text-red-600">{errors.anak_ke}</p>}
                             </div>
@@ -481,7 +560,10 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     name="jenis_kelamin"
                                     value={data.jenis_kelamin}
                                     onChange={(e) => setData('jenis_kelamin', e.target.value)}
-                                    className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
+                                    disabled={!nisnChecked || !nisnAvailable}
+                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
+                                        !nisnChecked || !nisnAvailable ? 'cursor-not-allowed bg-gray-100' : ''
+                                    }`}
                                 >
                                     <option value="">Pilih Jenis Kelamin</option>
                                     <option value="L">Laki-laki</option>
@@ -504,7 +586,10 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     value={data.alamat_domisili}
                                     onChange={(e) => setData('alamat_domisili', e.target.value)}
                                     placeholder="Contoh: Jl. Pangeran Antasari No. 45 RT 03/RW 05, Kel. Air Putih, Kec. Samarinda Ulu, Kota Samarinda, Kalimantan Timur, 75119"
-                                    className="min-h-[100px] w-full resize-y rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
+                                    disabled={!nisnChecked || !nisnAvailable}
+                                    className={`min-h-[100px] w-full resize-y rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
+                                        !nisnChecked || !nisnAvailable ? 'cursor-not-allowed bg-gray-100' : ''
+                                    }`}
                                 />
                                 {errors.alamat_domisili && <div className="mt-1 text-sm text-red-700">{errors.alamat_domisili}</div>}
                             </div>
@@ -516,12 +601,14 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                         name="provinsi"
                                         value={data.provinsi}
                                         onChange={(e) => setData('provinsi', e.target.value)}
-                                        className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
-                                        disabled={loadingProvinces}
+                                        className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
+                                            !nisnChecked || !nisnAvailable ? 'cursor-not-allowed bg-gray-100' : ''
+                                        }`}
+                                        disabled={loadingProvinces || !nisnChecked || !nisnAvailable}
                                     >
                                         <option value="">Pilih Provinsi</option>
                                         {provinces.map((province) => (
-                                            <option key={province.id} value={province.name}>
+                                            <option key={province.id} value={province.id}>
                                                 {province.name}
                                             </option>
                                         ))}
@@ -536,12 +623,14 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                         name="kota"
                                         value={data.kota}
                                         onChange={(e) => setData('kota', e.target.value)}
-                                        className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
-                                        disabled={loadingCities || !data.provinsi}
+                                        className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
+                                            !nisnChecked || !nisnAvailable ? 'cursor-not-allowed bg-gray-100' : ''
+                                        }`}
+                                        disabled={loadingCities || !data.provinsi || !nisnChecked || !nisnAvailable}
                                     >
                                         <option value="">Pilih Kota / Kabupaten</option>
                                         {cities.map((city) => (
-                                            <option key={city.id} value={city.name}>
+                                            <option key={city.id} value={city.id}>
                                                 {city.name}
                                             </option>
                                         ))}
@@ -556,12 +645,14 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                         name="kecamatan"
                                         value={data.kecamatan}
                                         onChange={(e) => setData('kecamatan', e.target.value)}
-                                        className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
-                                        disabled={loadingDistricts || !data.kota}
+                                        className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
+                                            !nisnChecked || !nisnAvailable ? 'cursor-not-allowed bg-gray-100' : ''
+                                        }`}
+                                        disabled={loadingDistricts || !data.kota || !nisnChecked || !nisnAvailable}
                                     >
                                         <option value="">Pilih Kecamatan</option>
                                         {districts.map((district) => (
-                                            <option key={district.id} value={district.name}>
+                                            <option key={district.id} value={district.id}>
                                                 {district.name}
                                             </option>
                                         ))}
@@ -576,12 +667,14 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                         name="kelurahan"
                                         value={data.kelurahan}
                                         onChange={(e) => setData('kelurahan', e.target.value)}
-                                        className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
-                                        disabled={!data.kecamatan}
+                                        className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
+                                            !nisnChecked || !nisnAvailable ? 'cursor-not-allowed bg-gray-100' : ''
+                                        }`}
+                                        disabled={!data.kecamatan || !nisnChecked || !nisnAvailable}
                                     >
                                         <option value="">Pilih Kelurahan / Desa</option>
                                         {villages.map((village) => (
-                                            <option key={village.id} value={village.name}>
+                                            <option key={village.id} value={village.id}>
                                                 {village.name}
                                             </option>
                                         ))}
@@ -604,7 +697,10 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     value={data.asal_sekolah}
                                     onChange={(e) => setData('asal_sekolah', e.target.value)}
                                     placeholder="Nama Sekolah Asal"
-                                    className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
+                                    disabled={!nisnChecked || !nisnAvailable}
+                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
+                                        !nisnChecked || !nisnAvailable ? 'cursor-not-allowed bg-gray-100' : ''
+                                    }`}
                                 />
                                 {errors.asal_sekolah && <div className="mt-1 text-sm text-red-700">{errors.asal_sekolah}</div>}
                             </div>
@@ -624,7 +720,10 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     value={data.nama_ayah}
                                     onChange={(e) => setData('nama_ayah', e.target.value)}
                                     placeholder="Nama Ayah"
-                                    className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
+                                    disabled={!nisnChecked || !nisnAvailable}
+                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
+                                        !nisnChecked || !nisnAvailable ? 'cursor-not-allowed bg-gray-100' : ''
+                                    }`}
                                 />
                                 {errors.nama_ayah && <div className="mt-1 text-sm text-red-700">{errors.nama_ayah}</div>}
                             </div>
@@ -649,7 +748,10 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     maxLength={16} // just in case
                                     inputMode="numeric" // mobile keyboard will show numbers
                                     pattern="\d{16}" // HTML5 validation pattern (16 digits)
-                                    className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
+                                    disabled={!nisnChecked || !nisnAvailable}
+                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
+                                        !nisnChecked || !nisnAvailable ? 'cursor-not-allowed bg-gray-100' : ''
+                                    }`}
                                 />
 
                                 {errors.nik_ayah && <div className="mt-1 text-sm text-red-700">{errors.nik_ayah}</div>}
@@ -662,7 +764,10 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     name="pendidikan_ayah"
                                     value={data.pendidikan_ayah}
                                     onChange={(e) => setData('pendidikan_ayah', e.target.value)}
-                                    className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
+                                    disabled={!nisnChecked || !nisnAvailable}
+                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
+                                        !nisnChecked || !nisnAvailable ? 'cursor-not-allowed bg-gray-100' : ''
+                                    }`}
                                 >
                                     <option value="">Pilih Pendidikan Terakhir</option>
                                     <option value="sd">SD / Sederajat</option>
@@ -690,7 +795,10 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     value={data.pekerjaan_ayah}
                                     onChange={(e) => setData('pekerjaan_ayah', e.target.value)}
                                     placeholder="Pekerjaan Ayah"
-                                    className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
+                                    disabled={!nisnChecked || !nisnAvailable}
+                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
+                                        !nisnChecked || !nisnAvailable ? 'cursor-not-allowed bg-gray-100' : ''
+                                    }`}
                                 />
                                 {errors.pekerjaan_ayah && <div className="mt-1 text-sm text-red-700">{errors.pekerjaan_ayah}</div>}
                             </div>
@@ -706,7 +814,10 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     value={data.nama_ibu}
                                     onChange={(e) => setData('nama_ibu', e.target.value)}
                                     placeholder="Nama Ibu"
-                                    className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
+                                    disabled={!nisnChecked || !nisnAvailable}
+                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
+                                        !nisnChecked || !nisnAvailable ? 'cursor-not-allowed bg-gray-100' : ''
+                                    }`}
                                 />
                                 {errors.nama_ibu && <div className="mt-1 text-sm text-red-700">{errors.nama_ibu}</div>}
                             </div>
@@ -731,7 +842,10 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     maxLength={16} // extra safeguard
                                     inputMode="numeric" // supaya di HP muncul keyboard angka
                                     pattern="\d{16}" // HTML5 pattern: wajib 16 digit
-                                    className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
+                                    disabled={!nisnChecked || !nisnAvailable}
+                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
+                                        !nisnChecked || !nisnAvailable ? 'cursor-not-allowed bg-gray-100' : ''
+                                    }`}
                                 />
 
                                 {errors.nik_ibu && <div className="mt-1 text-sm text-red-700">{errors.nik_ibu}</div>}
@@ -744,7 +858,10 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     name="pendidikan_ibu"
                                     value={data.pendidikan_ibu}
                                     onChange={(e) => setData('pendidikan_ibu', e.target.value)}
-                                    className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
+                                    disabled={!nisnChecked || !nisnAvailable}
+                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
+                                        !nisnChecked || !nisnAvailable ? 'cursor-not-allowed bg-gray-100' : ''
+                                    }`}
                                 >
                                     <option value="">Pilih Pendidikan Terakhir</option>
                                     <option value="sd">SD / Sederajat</option>
@@ -772,7 +889,10 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     value={data.pekerjaan_ibu}
                                     onChange={(e) => setData('pekerjaan_ibu', e.target.value)}
                                     placeholder="Pekerjaan Ibu"
-                                    className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
+                                    disabled={!nisnChecked || !nisnAvailable}
+                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
+                                        !nisnChecked || !nisnAvailable ? 'cursor-not-allowed bg-gray-100' : ''
+                                    }`}
                                 />
                                 {errors.pekerjaan_ibu && <div className="mt-1 text-sm text-red-700">{errors.pekerjaan_ibu}</div>}
                             </div>
@@ -784,7 +904,10 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     name="penghasilan"
                                     value={data.penghasilan}
                                     onChange={(e) => setData('penghasilan', e.target.value)}
-                                    className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
+                                    disabled={!nisnChecked || !nisnAvailable}
+                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
+                                        !nisnChecked || !nisnAvailable ? 'cursor-not-allowed bg-gray-100' : ''
+                                    }`}
                                 >
                                     <option value="">Pilih Rentang Penghasilan</option>
                                     <option value="income_1">Kurang dari Rp 500.000</option>
@@ -805,9 +928,12 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     type="text"
                                     name="no_hp_orangtua"
                                     value={data.no_hp_orangtua}
+                                    disabled={!nisnChecked || !nisnAvailable}
                                     onChange={(e) => setData('no_hp_orangtua', e.target.value)}
                                     placeholder="08xxxxxxxxx"
-                                    className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
+                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
+                                        !nisnChecked || !nisnAvailable ? 'cursor-not-allowed bg-gray-100' : ''
+                                    }`}
                                 />
                                 {errors.no_hp_orangtua && <div className="mt-1 text-sm text-red-700">{errors.no_hp_orangtua}</div>}
                             </div>
@@ -818,9 +944,12 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                 <textarea
                                     name="alamat_kk"
                                     value={data.alamat_kk}
+                                    disabled={!nisnChecked || !nisnAvailable}
                                     onChange={(e) => setData('alamat_kk', e.target.value)}
                                     placeholder="Alamat sesuai Kartu Keluarga"
-                                    className="min-h-[100px] w-full resize-y rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
+                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
+                                        !nisnChecked || !nisnAvailable ? 'cursor-not-allowed bg-gray-100' : ''
+                                    }`}
                                 />
                                 {errors.alamat_kk && <div className="mt-1 text-sm text-red-700">{errors.alamat_kk}</div>}
                             </div>
@@ -831,27 +960,32 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                     <div>
                         <h2 className="mb-6 border-b pb-2 text-base font-semibold text-gray-800 sm:text-lg">Informasi Tambahan</h2>
                         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                            {/* Ukuran Kopiah */}
-                            <div>
-                                <label className="mb-2 block text-sm font-medium text-gray-900">Ukuran Kopiah</label>
-                                <select
-                                    name="kopiah"
-                                    value={data.kopiah ?? ''} // Jika null/undefined, tampilkan opsi kosong
-                                    onChange={(e) => {
-                                        const val = e.target.value;
-                                        setData('kopiah', val === '' ? null : Number(val)); // Konversi ke number, atau null jika kosong
-                                    }}
-                                    className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
-                                >
-                                    <option value="">Pilih Ukuran Kopiah</option>
-                                    {[2, 3, 4, 5, 6, 7, 8, 9].map((size) => (
-                                        <option key={size} value={size}>
-                                            {size}
-                                        </option>
-                                    ))}
-                                </select>
-                                {errors.kopiah && <div className="mt-1 text-sm text-red-700">{errors.kopiah}</div>}
-                            </div>
+                            {/* Ukuran Kopiah - Hanya untuk laki-laki */}
+                            {data.jenis_kelamin !== 'P' && (
+                                <div>
+                                    <label className="mb-2 block text-sm font-medium text-gray-900">Ukuran Kopiah</label>
+                                    <select
+                                        name="kopiah"
+                                        value={data.kopiah ?? ''} // Jika null/undefined, tampilkan opsi kosong
+                                        disabled={!nisnChecked || !nisnAvailable}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            setData('kopiah', val === '' ? null : Number(val)); // Konversi ke number, atau null jika kosong
+                                        }}
+                                        className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
+                                            !nisnChecked || !nisnAvailable ? 'cursor-not-allowed bg-gray-100' : ''
+                                        }`}
+                                    >
+                                        <option value="">Pilih Ukuran Kopiah</option>
+                                        {[2, 3, 4, 5, 6, 7, 8, 9].map((size) => (
+                                            <option key={size} value={size}>
+                                                {size}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    {errors.kopiah && <div className="mt-1 text-sm text-red-700">{errors.kopiah}</div>}
+                                </div>
+                            )}
 
                             {/* Ukuran Seragam */}
                             <div className="mb-4">
@@ -861,18 +995,20 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                 <select
                                     id="seragam"
                                     name="seragam"
+                                    disabled={!nisnChecked || !nisnAvailable}
                                     value={data.seragam}
                                     onChange={(e) => setData('seragam', e.target.value)}
-                                    className="w-full rounded-lg border border-gray-300 px-3 py-3 text-sm shadow-sm transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
+                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
+                                        !nisnChecked || !nisnAvailable ? 'cursor-not-allowed bg-gray-100' : ''
+                                    }`}
                                 >
-                                    {['S', 'M', 'L', 'XL', 'XXL', 'XXXL'].map((size) => (
+                                    <option value="">Pilih Ukuran Seragam</option>
+                                    {['s', 'm', 'l', 'xl', 'xxl', 'xxxl'].map((size) => (
                                         <option key={size} value={size}>
                                             {size}
                                         </option>
                                     ))}{' '}
-                                    {/* 👈 This was missing */}
                                 </select>{' '}
-                                {/* 👈 Moved to correct position */}
                                 {errors.seragam && <div className="mt-1 text-sm text-red-700">{errors.seragam}</div>}
                             </div>
 
@@ -882,10 +1018,13 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                 <input
                                     type="text"
                                     name="nama_pengirim"
+                                    disabled={!nisnChecked || !nisnAvailable}
                                     value={data.nama_pengirim}
                                     onChange={(e) => setData('nama_pengirim', e.target.value)}
                                     placeholder="Nama Pengirim"
-                                    className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
+                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
+                                        !nisnChecked || !nisnAvailable ? 'cursor-not-allowed bg-gray-100' : ''
+                                    }`}
                                 />
                                 {errors.nama_pengirim && <div className="mt-1 text-sm text-red-700">{errors.nama_pengirim}</div>}
                             </div>
@@ -896,6 +1035,7 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                 <input
                                     type="file"
                                     name="image_bukti_transaksi_url"
+                                    disabled={!nisnChecked || !nisnAvailable}
                                     onChange={(e) => {
                                         if (e.target.files && e.target.files[0]) {
                                             setData('image_bukti_transaksi_url', e.target.files[0]);
@@ -904,7 +1044,9 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                         }
                                     }}
                                     accept="image/*"
-                                    className="w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
+                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
+                                        !nisnChecked || !nisnAvailable ? 'cursor-not-allowed bg-gray-100' : ''
+                                    }`}
                                 />
                                 <p className="mt-1 text-sm text-gray-500">Unggah bukti pembayaran pendaftaran</p>
                                 {errors.image_bukti_transaksi_url && (
@@ -918,8 +1060,8 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                     <div className="pt-4">
                         <button
                             type="submit"
-                            disabled={processing}
-                            className="w-full cursor-pointer rounded-lg bg-green-600 px-5 py-3 text-sm font-semibold text-white shadow-md transition hover:bg-green-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 disabled:opacity-75 sm:text-base"
+                            disabled={processing || !nisnChecked || !nisnAvailable}
+                            className={`w-full cursor-pointer rounded-lg px-5 py-3 text-sm font-semibold text-white shadow-md transition focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 disabled:opacity-75 sm:text-base ${processing || !nisnChecked || !nisnAvailable ? 'bg-gray-400' : 'bg-green-600 hover:bg-green-700'} `}
                         >
                             {processing ? 'Memproses...' : 'Daftar Sekarang'}
                         </button>
