@@ -17,13 +17,15 @@ class DocumentsTable
         return $table
             ->columns([
                 TextColumn::make('name')->sortable()->searchable(),
-                TextColumn::make('category')->sortable()->searchable(),
                 TextColumn::make('file_path')
                     ->label('File Path')
                     ->url(fn($record) => asset('storage/'.$record->file_path), true),
                 TextColumn::make('extension')
                     ->badge()
                     ->sortable(),
+                TextColumn::make('head')
+                    ->sortable()
+                    ->searchable(),
                 TextColumn::make('description')->limit(50),
                 TextColumn::make('created_at')->dateTime(),
             ])

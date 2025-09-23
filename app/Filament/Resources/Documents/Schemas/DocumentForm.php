@@ -21,10 +21,6 @@ class DocumentForm
                     ->maxLength(255)
                     ->label('Document Name'),
 
-                TextInput::make('category')
-                    ->maxLength(255)
-                    ->nullable(),
-
                 FileUpload::make('file_path')
                     ->directory('documents')
                     ->preserveFilenames()
@@ -53,6 +49,10 @@ class DocumentForm
                     ->nullable()
                     ->disabled()
                     ->helperText('Automatically filled from uploaded file'),
+
+                TextInput::make('head')
+                    ->maxLength(255)
+                    ->nullable(),
 
                 Textarea::make('description')
                     ->maxLength(65535)

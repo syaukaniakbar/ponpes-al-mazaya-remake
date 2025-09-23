@@ -13,12 +13,12 @@ return new class extends Migration
     {
         Schema::create('documents', function (Blueprint $table) {    
         $table->id();
-        $table->string('name'); // Nama dokumen, contoh: "Surat Pernyataan"
-        $table->string('category')->nullable(); // contoh: "pendaftaran"
-        $table->string('file_path'); // path file
-        $table->string('mime_type')->nullable(); // application/pdf, image/png, dll
-        $table->string('extension', 10)->nullable(); // pdf, docx, png, dll
-        $table->text('description')->nullable(); // penjelasan singkat
+        $table->string('name');
+        $table->string('file_path'); //
+        $table->string('mime_type')->nullable(); 
+        $table->string('extension', 10)->nullable(); 
+        $table->string('head')->nullable(); 
+        $table->text('description')->nullable();
         $table->timestamps();
         });
     }
