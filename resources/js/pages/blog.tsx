@@ -9,11 +9,11 @@ type Props = {
 };
 
 export default function Blog() {
-    const { blogs } = usePage<Props>().props;
+    const { blogs, selectedCategory } = usePage<Props & { selectedCategory?: string }>().props;
 
     return (
         <MainLayout title="Blog | Ponpes Al-Mazaya" description="Al-Mazaya Blog">
-            <BlogHeader />
+            <BlogHeader selectedCategory={selectedCategory} />
             <Blogs blogs={blogs} />
         </MainLayout>
     );

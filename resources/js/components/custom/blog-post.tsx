@@ -82,7 +82,7 @@ export default function BlogSection({ blogs }: Props) {
                             {filteredBlogs.map((post: Blog) => (
                                 <Link
                                     key={post.id}
-                                    href={route('blog.show', post.slug)} // ⬅️ Link ke detail blog
+                                    href={route('blog.show', { category: post.category, slug: post.slug })} // ⬅️ Link ke detail blog
                                     className="block"
                                 >
                                     <motion.article

@@ -9,21 +9,31 @@ use App\Models\Blog;
 
 class BlogController extends Controller
 {
-    public function index () {
+    public function index (Request $request) {
+        $category = $request->query('category'); // Get category from query parameter
 
-        $blogs = Blog::latest()->get()->map(function ($blog) {
+        $query = Blog::query();
+        
+        if ($category) {
+            // Handle case-insensitive matching for categories
+            $query->whereRaw('LOWER(category) = LOWER(?)', [$category]);
+        }
+        
+        $blogs = $query->latest()->get()->map(function ($blog) {
             $blog->image_url = asset('storage/' . $blog->image_url);
             return $blog;
         });
 
+        // Pass the original category parameter for frontend display
         return Inertia::render('blog', [
             'blogs' => $blogs,
+            'selectedCategory' => $category, // Pass selected category to frontend
         ]);
 
     }
 
-    public function show($slug) {
-        $blog = Blog::where('slug', $slug)->firstOrFail();
+    public function show($category, $slug) {
+        $blog = Blog::where('category', $category)->where('slug', $slug)->firstOrFail();
 
         // perbaiki URL image
         $blog->image_url = asset('storage/' . $blog->image_url);

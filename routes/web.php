@@ -40,7 +40,7 @@ Route::get('about-us', function () {
 
 Route::prefix('blog')->name('blog.')->group(function () {
     Route::get('/', [BlogController::class, 'index'])->name('index');
-    Route::get('/{slug}', [BlogController::class, 'show'])->name('show');
+    Route::get('/{category}/{slug}', [BlogController::class, 'show'])->name('show');
 });
 
 

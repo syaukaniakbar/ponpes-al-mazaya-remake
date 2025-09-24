@@ -1,11 +1,17 @@
 // components/BlogHeader.tsx
 'use client';
 
+import { Link } from '@inertiajs/react';
 import { motion } from 'framer-motion';
+import { route } from 'ziggy-js';
 
 const categories = ['Prestasi', 'Umum', 'Ilmiah'];
 
-export default function BlogHeader() {
+type Props = {
+    selectedCategory?: string;
+};
+
+export default function BlogHeader({ selectedCategory }: Props) {
     return (
         <section className="mt-18 bg-gradient-to-b from-white to-gray-50 py-20">
             <div className="mx-auto max-w-5xl px-6 text-center">
@@ -36,16 +42,38 @@ export default function BlogHeader() {
                     transition={{ delay: 0.6, duration: 0.6 }}
                     className="mt-12 flex flex-wrap items-center justify-center gap-6 sm:gap-10"
                 >
+                    <Link 
+                        href={route('blog.index')} 
+                        className={`relative text-base font-medium transition-colors ${
+                            !selectedCategory ? 'text-green-600' : 'text-gray-700 hover:text-green-600'
+                        }`}
+                    >
+                        Semua
+                        <motion.span
+                            layoutId="underline"
+                            className="absolute -bottom-1 left-0 h-[2px] w-0 bg-green-600"
+                            initial={false}
+                            animate={!selectedCategory ? { width: '100%' } : { width: '0%' }}
+                            transition={{ duration: 0.3, ease: 'easeOut' }}
+                        />
+                    </Link>
                     {categories.map((cat) => (
-                        <a key={cat} href="#" className="relative text-base font-medium text-gray-700 transition-colors hover:text-green-600">
+                        <Link 
+                            key={cat} 
+                            href={route('blog.index', { category: cat.toLowerCase() })} 
+                            className={`relative text-base font-medium transition-colors ${
+                                selectedCategory === cat.toLowerCase() ? 'text-green-600' : 'text-gray-700 hover:text-green-600'
+                            }`}
+                        >
                             {cat}
                             <motion.span
                                 layoutId="underline"
                                 className="absolute -bottom-1 left-0 h-[2px] w-0 bg-green-600"
-                                whileHover={{ width: '100%' }}
+                                initial={false}
+                                animate={selectedCategory === cat.toLowerCase() ? { width: '100%' } : { width: '0%' }}
                                 transition={{ duration: 0.3, ease: 'easeOut' }}
                             />
-                        </a>
+                        </Link>
                     ))}
                 </motion.nav>
             </div>

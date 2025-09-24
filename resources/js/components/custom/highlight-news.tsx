@@ -42,7 +42,7 @@ export default function NewsSection({ blogs }: Props) {
                         {/* Featured News */}
                         {blogs[0] && (
                             <motion.a
-                                href={route('blog.show', blogs[0].slug)}
+                                href={route('blog.show', { category: blogs[0].category, slug: blogs[0].slug })}
                                 aria-label={`Read more about ${blogs[0].title}`}
                                 className="group relative col-span-1 row-span-2 overflow-hidden rounded-3xl shadow-lg transition-shadow hover:shadow-2xl md:col-span-2"
                                 initial={{ opacity: 0, y: 30 }}
@@ -73,7 +73,7 @@ export default function NewsSection({ blogs }: Props) {
                         {blogs.slice(1).map((blog, idx) => (
                             <motion.a
                                 key={blog.id}
-                                href={route('blog.show', blog.slug)}
+                                href={route('blog.show', { category: blog.category, slug: blog.slug })}
                                 aria-label={`Read more about ${blog.title}`}
                                 className="group relative overflow-hidden rounded-2xl shadow-sm transition-shadow hover:shadow-lg"
                                 initial={{ opacity: 0, y: 30 }}
