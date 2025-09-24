@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RegionController;
 use App\Http\Controllers\SiswaController;
 use App\Models\Document;
+use App\Models\NavLink;
 
 Route::get('/regions/provinces', [RegionController::class, 'getProvinces']);
 Route::get('/regions/cities/{provinceCode}', [RegionController::class, 'getCities']);
@@ -26,4 +27,11 @@ Route::get('/documents/category/{category}', function ($category) {
     }
     
     return response()->json(['message' => 'Document not found'], 404);
+});
+
+// NavLink routes
+Route::get('/nav-links', function () {
+    $navLinks = NavLink::where('is_active', true)->get();
+    
+    return response()->json($navLinks);
 });
