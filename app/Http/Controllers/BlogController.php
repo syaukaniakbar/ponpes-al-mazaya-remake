@@ -19,7 +19,7 @@ class BlogController extends Controller
             $query->whereRaw('LOWER(category) = LOWER(?)', [$category]);
         }
         
-        $blogs = $query->latest()->get()->map(function ($blog) {
+        $blogs = $query->latest()->paginate(6)->through(function ($blog) {
             $blog->image_url = asset('storage/' . $blog->image_url);
             return $blog;
         });

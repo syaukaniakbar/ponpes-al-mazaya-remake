@@ -35,15 +35,29 @@ function useDebounce<T>(value: T, delay: number): T {
 }
 
 type Props = {
-    blogs: Blog[];
+    blogs: {
+        data: Blog[];
+        links: {
+            url: string | null;
+            label: string;
+            active: boolean;
+        }[];
+        next_page_url: string | null;
+        prev_page_url: string | null;
+        current_page: number;
+        last_page: number;
+        per_page: number;
+        total: number;
+    };
 };
 
 export default function BlogSection({ blogs }: Props) {
     const [search, setSearch] = useState('');
     const debouncedSearch = useDebounce(search, 400);
 
-    // Filter blog by title (debounced)
-    const filteredBlogs = blogs.filter((post) => post.title.toLowerCase().includes(debouncedSearch.toLowerCase()));
+    // Use the paginated blogs data directly, but filter based on search if needed
+    const blogData = blogs.data; // Extract the actual blog data from the paginator
+    const filteredBlogs = blogData.filter((post) => post.title.toLowerCase().includes(debouncedSearch.toLowerCase()));
 
     return (
         <section className="relative bg-white py-16">
@@ -136,15 +150,49 @@ export default function BlogSection({ blogs }: Props) {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2, duration: 0.5 }}
-                    className="mt-12 flex justify-center gap-2"
+                    className="mt-12 flex flex-wrap justify-center gap-2"
                 >
-                    <button disabled className="rounded-full border border-gray-300 px-4 py-2 text-sm text-gray-400 transition">
-                        ← Previous
-                    </button>
-                    <button className="rounded-full bg-green-600 px-4 py-2 text-sm text-white shadow hover:bg-green-700">1</button>
-                    <button disabled className="rounded-full border border-gray-300 px-4 py-2 text-sm text-gray-400 transition">
-                        Next →
-                    </button>
+                    {blogs.prev_page_url && (
+                        <a
+                            href={blogs.prev_page_url}
+                            className="rounded-full border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100"
+                        >
+                            ← Previous
+                        </a>
+                    )}
+                    {blogs.links
+                        .filter(
+                            (link: { url: string | null; label: string; active: boolean }) =>
+                                link.label !== '&laquo; Previous' && link.label !== 'Next &raquo;',
+                        ) // Filter out the default prev/next labels
+                        .map((link: { url: string | null; label: string; active: boolean }, index: number) =>
+                            link.url ? (
+                                <a
+                                    key={index}
+                                    href={link.url}
+                                    className={`rounded-full px-4 py-2 text-sm font-medium transition ${
+                                        link.active ? 'bg-green-600 text-white shadow' : 'border border-gray-300 text-gray-700 hover:bg-gray-100'
+                                    }`}
+                                    dangerouslySetInnerHTML={{ __html: link.label }}
+                                />
+                            ) : (
+                                <span
+                                    key={index}
+                                    className={`rounded-full px-4 py-2 text-sm font-medium ${
+                                        link.active ? 'bg-green-600 text-white shadow' : 'border border-gray-300 text-gray-700'
+                                    }`}
+                                    dangerouslySetInnerHTML={{ __html: link.label }}
+                                />
+                            ),
+                        )}
+                    {blogs.next_page_url && (
+                        <a
+                            href={blogs.next_page_url}
+                            className="rounded-full border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-100"
+                        >
+                            Next →
+                        </a>
+                    )}
                 </motion.div>
             </div>
         </section>

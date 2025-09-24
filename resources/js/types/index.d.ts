@@ -51,6 +51,21 @@ export interface Blog {
     created_at: string;
 }
 
+export interface BlogPaginator {
+    data: Blog[];
+    links: {
+        url: string | null;
+        label: string;
+        active: boolean;
+    }[];
+    next_page_url: string | null;
+    prev_page_url: string | null;
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+}
+
 export interface Video {
     id: number;
     title: string;
