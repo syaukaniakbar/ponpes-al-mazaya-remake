@@ -63,11 +63,6 @@ class SiswasTable
             ->bulkActions([
                 // Menambahkan aksi Bulk untuk menghapus data
                 DeleteBulkAction::make(),
-                
-                // Jika ingin menggunakan ActionGroup, kamu harus mendefinisikan aksinya
-                ActionGroup::make([
-                    DeleteBulkAction::make(),  // Misalnya, aksi bulk untuk menghapus
-                ])
             ]);
     }
 }

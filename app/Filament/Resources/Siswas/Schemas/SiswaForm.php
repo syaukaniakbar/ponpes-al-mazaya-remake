@@ -199,10 +199,18 @@ class SiswaForm
                     ->label('Pekerjaan Ibu')
                     ->required()
                     ->columnSpan(1),
-                TextInput::make('penghasilan')
+                Select::make('penghasilan')
                     ->label('Penghasilan Orang Tua (Rp)')
+                    ->options([
+                        'Kurang dari Rp. 500.000' => 'Kurang dari Rp. 500.000',
+                        'Rp. 500.000 - Rp. 1.000.000' => 'Rp. 500.000 - Rp. 1.000.000',
+                        'Rp. 1.000.000 - Rp. 2.000.000' => 'Rp. 1.000.000 - Rp. 2.000.000',
+                        'Rp. 2.000.000 - Rp. 3.000.000' => 'Rp. 2.000.000 - Rp. 3.000.000',
+                        'Rp. 3.000.000 - Rp. 5.000.000' => 'Rp. 3.000.000 - Rp. 5.000.000',
+                        'Lebih dari Rp. 5.000.000' => 'Lebih dari Rp. 5.000.000',
+                    ])
                     ->required()
-                    ->numeric()
+                    ->native(false) // pakai dropdown modern, bukan default browser
                     ->columnSpanFull(),
                 TextInput::make('no_hp_orangtua')
                     ->label('No. HP Orang Tua')

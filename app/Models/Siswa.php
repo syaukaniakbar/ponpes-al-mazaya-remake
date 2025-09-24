@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class Siswa extends Model
 {
@@ -52,4 +53,19 @@ class Siswa extends Model
     ];
 
     use HasFactory;
+
+    /**
+     * Delete the associated transaction image when the record is deleted.
+     */
+    protected static function booted()
+    {
+        static::deleting(function ($siswa) {
+            if ($siswa->image_bukti_transaksi_url) {
+                // Delete the associated transaction image file
+                if (Storage::disk('public')->exists($siswa->image_bukti_transaksi_url)) {
+                    Storage::disk('public')->delete($siswa->image_bukti_transaksi_url);
+                }
+            }
+        });
+    }
 }

@@ -192,4 +192,53 @@ class SiswaRegistrationTest extends TestCase
             'nama_pengirim',
         ]);
     }
+    
+    public function test_nisn_check_api_returns_correct_response()
+    {
+        // Test when NISN doesn't exist
+        $response = $this->get('/api/siswa/check-nisn/1234567890');
+        $response->assertStatus(200);
+        $response->assertJson(['exists' => false]);
+        
+        // Create a student with a specific NISN
+        $siswa = Siswa::create([
+            'nisn' => '1234567890',
+            'nama' => 'Test Student',
+            'program_pendidikan' => 'mts',
+            'nik' => '3501234567890001',
+            'nomor_kk' => '3501234567890002',
+            'tempat_lahir' => 'Test City',
+            'tanggal_lahir' => '2008-05-15',
+            'jenis_kelamin' => 'L',
+            'alamat_domisili' => 'Test Address',
+            'provinsi' => 'Test Province',
+            'kota' => 'Test City',
+            'kecamatan' => 'Test District',
+            'kelurahan' => 'Test Village',
+            'jumlah_saudara' => 2,
+            'anak_ke' => 1,
+            'asal_sekolah' => 'Test School',
+            'nama_ayah' => 'Test Father',
+            'nik_ayah' => '3501234567890003',
+            'pendidikan_ayah' => 'SMA',
+            'pekerjaan_ayah' => 'Worker',
+            'nama_ibu' => 'Test Mother',
+            'nik_ibu' => '3501234567890004',
+            'pendidikan_ibu' => 'SMP',
+            'pekerjaan_ibu' => 'Housewife',
+            'penghasilan' => '2.000.000 - 3.000.000',
+            'alamat_kk' => 'Test Address',
+            'no_hp_orangtua' => '081234567890',
+            'kopiah' => 5,
+            'seragam' => 'L',
+            'nama_pengirim' => 'Test Sender',
+            'status_pendaftaran' => 'menunggu verifikasi',
+            'image_bukti_transaksi_url' => 'test.jpg',
+        ]);
+        
+        // Test when NISN exists
+        $response = $this->get('/api/siswa/check-nisn/1234567890');
+        $response->assertStatus(200);
+        $response->assertJson(['exists' => true]);
+    }
 }

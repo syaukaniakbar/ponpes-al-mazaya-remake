@@ -61,7 +61,12 @@ class SiswaController extends Controller
          // Handle file upload — guaranteed to exist due to 'required' rule
         try {
             $file = $request->file('image_bukti_transaksi_url');
-            $filePath = $file->store('bukti_transaksi', 'public');
+            // Generate filename using nisn_nama format
+            $extension = $file->getClientOriginalExtension();
+            $nisn = $validated['nisn'];
+            $nama = preg_replace('/[^A-Za-z0-9\-_.]/', '_', $validated['nama']); // Clean nama from special characters
+            $fileName = $nisn . '_' . $nama . '.' . $extension;
+            $filePath = $file->storeAs('transaction_images', $fileName, 'public');
             $validated['image_bukti_transaksi_url'] = $filePath;
         } catch (\Exception $e) {
             Log::error('File upload failed during student registration: ' . $e->getMessage());
@@ -102,6 +107,27 @@ class SiswaController extends Controller
         
         return response()->json([
             'exists' => $exists
+        ]);
+    }
+    
+    public function getByNisn($nisn)
+    {
+        $siswa = Siswa::where('nisn', $nisn)->first();
+        
+        if ($siswa) {
+            // Add the full URL for the image
+            if ($siswa->image_bukti_transaksi_url) {
+                $siswa->image_bukti_transaksi_url = asset('storage/' . $siswa->image_bukti_transaksi_url);
+            }
+            
+            return response()->json([
+                'exists' => true,
+                'data' => $siswa
+            ]);
+        }
+        
+        return response()->json([
+            'exists' => false
         ]);
     }
         

@@ -1,7 +1,7 @@
 import { useForm } from '@inertiajs/react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { CheckCircle2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { BookOpen, CheckCircle2, CreditCard, Download, FileText, Globe, MousePointerClick, Pencil } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { route } from 'ziggy-js';
 
 const steps = [
@@ -11,43 +11,369 @@ const steps = [
     { id: 4, title: 'Formulir Pendaftaran' },
 ];
 
-const TahapanPendaftaran = function TahapanPendaftaran() {
+const TahapanPendaftaran = () => {
+    const steps = [
+        {
+            step: '1',
+            title: 'Akses Website Resmi',
+            desc: 'Calon santri atau orang tua/wali mengunjungi situs resmi Pondok Pesantren Al Mazaya Paser yaitu almazayapaser.ponpes.id.',
+            icon: Globe,
+        },
+        {
+            step: '2',
+            title: 'Klik Menu Pendaftaran',
+            desc: "Pada halaman utama, terdapat menu/tombol 'Pendaftaran' yang akan mengarahkan ke halaman pendaftaran.",
+            icon: MousePointerClick,
+        },
+        {
+            step: '3',
+            title: 'Membaca Alur Pendaftaran',
+            desc: 'Calon santri/orang tua membaca tahap demi tahap pendaftaran yang telah ditentukan.',
+            icon: BookOpen,
+        },
+        {
+            step: '4',
+            title: 'Membaca Peraturan Pondok',
+            desc: 'Mempelajari peraturan pondok pesantren dan menyetujui ketentuan yang berlaku.',
+            icon: FileText,
+        },
+        {
+            step: '5',
+            title: 'Mendownload Surat Pernyataan',
+            desc: 'Surat pernyataan di-download, dicetak, ditandatangani orang tua/wali, dan dibubuhi materai Rp10.000.',
+            icon: Download,
+        },
+        {
+            step: '6',
+            title: 'Mengisi Form Pendaftaran',
+            desc: 'Calon santri/orang tua mengisi form pendaftaran online sesuai data yang diminta.',
+            icon: Pencil,
+        },
+        {
+            step: '7',
+            title: 'Membayar Biaya Administrasi',
+            desc: (
+                <>
+                    <div className="space-y-3">
+                        <p className="font-medium text-gray-800">
+                            Silakan transfer biaya pendaftaran sebesar{' '}
+                            <span className="rounded bg-green-700 px-2 py-1 font-semibold text-white">Rp200.000</span> ke rekening berikut:
+                        </p>
+
+                        <div className="rounded-lg border border-gray-200 bg-gray-50 p-4 text-sm text-gray-700">
+                            <p className="font-semibold text-gray-900">Bank Syariah Indonesia (BSI)</p>
+                            <p>
+                                <span className="font-medium">No. Rekening:</span> 2220120239
+                            </p>
+                            <p>
+                                <span className="font-medium">A/n :</span> YPI AZ ZAINI AL AZHARI PASER
+                            </p>
+                        </div>
+                    </div>
+                </>
+            ),
+            icon: CreditCard,
+        },
+        {
+            step: '8',
+            title: 'Selesai Pendaftaran Online',
+            desc: 'Setelah form terkirim, halaman konfirmasi akan muncul terkait daftar ulang.',
+            icon: CheckCircle2,
+        },
+    ];
+
     return (
-        <div className="w-full px-4 sm:px-4">
-            <div className="mx-auto rounded-2xl bg-white p-6 shadow-md ring-1 ring-gray-100 sm:p-8">
+        <div className="w-full px-4 sm:px-6 lg:px-8">
+            <motion.div
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                viewport={{ once: true }}
+                className="mx-auto max-w-6xl rounded-3xl bg-white/80 p-10 shadow-xl ring-1 ring-gray-100 backdrop-blur"
+            >
                 {/* Header */}
-                <h1 className="mb-3 text-lg font-bold text-gray-900 sm:mb-4 sm:text-2xl">Formulir Pendaftaran</h1>
-                <p className="mb-8 text-sm text-gray-600 sm:text-base">
-                    Silakan lengkapi data berikut dengan benar untuk melanjutkan proses pendaftaran.
-                </p>
-            </div>
+                <div className="mb-14 text-center">
+                    <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl">Petunjuk Alur Pendaftaran</h1>
+                    <p className="mt-3 text-base text-gray-600 sm:text-lg">Pondok Pesantren Al-Mazaya</p>
+                </div>
+
+                {/* Steps */}
+                <div className="relative grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+                    {steps.map((item, idx) => {
+                        const Icon = item.icon;
+                        return (
+                            <motion.div
+                                key={idx}
+                                initial={{ opacity: 0, y: 30 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.4, delay: idx * 0.1 }}
+                                viewport={{ once: true }}
+                                className="group flex flex-col items-start rounded-2xl border border-gray-100 bg-white/60 p-6 shadow-sm backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
+                            >
+                                {/* Icon Circle */}
+                                <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-green-500 text-white shadow-md transition group-hover:scale-110">
+                                    <Icon className="h-6 w-6" />
+                                </div>
+                                {/* Step */}
+                                <span className="mb-1 text-xs font-medium text-green-600">Langkah {item.step}</span>
+                                {/* Title */}
+                                <h3 className="mb-2 text-lg font-semibold text-gray-900">{item.title}</h3>
+                                {/* Desc */}
+                                <div className="text-sm leading-relaxed text-gray-600">{item.desc}</div>
+                            </motion.div>
+                        );
+                    })}
+                </div>
+            </motion.div>
         </div>
     );
 };
 
 const AturanPonpes = function AturanPonpes() {
+    const [document, setDocument] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchDocument = async () => {
+            try {
+                const response = await fetch('/api/documents/category/aturan%20al%20mazaya');
+                if (response.ok) {
+                    const data = await response.json();
+                    setDocument(data);
+                } else {
+                    setError('Dokumen aturan tidak ditemukan');
+                }
+            } catch (err) {
+                setError('Gagal memuat dokumen aturan');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchDocument();
+    }, []);
+
+    // Function to determine if we can preview the document
+    const canPreview = (doc: any) => {
+        if (!doc) return false;
+
+        // Check if it's a PDF
+        if (doc.extension === 'pdf' || doc.mime_type?.includes('pdf')) {
+            return true;
+        }
+
+        // Check if it's an image
+        if (doc.mime_type?.includes('image')) {
+            return true;
+        }
+
+        return false;
+    };
+
+    // Function to render the appropriate preview
+    const renderPreview = (doc: any) => {
+        if (!doc) return null;
+
+        // PDF preview
+        if (doc.extension === 'pdf' || doc.mime_type?.includes('pdf')) {
+            return <iframe src={`${doc.file_url}#view=fit`} className="h-96 w-full rounded-lg" title="Aturan Pondok Pesantren" frameBorder="0" />;
+        }
+
+        // Image preview
+        if (doc.mime_type?.includes('image')) {
+            return <img src={doc.file_url} alt={doc.name} className="h-96 w-full rounded-lg object-contain" />;
+        }
+
+        // Default message for unsupported types
+        return (
+            <div className="flex h-96 items-center justify-center">
+                <p className="text-gray-500">Pratinjau dokumen tidak tersedia untuk jenis file ini.</p>
+            </div>
+        );
+    };
+
     return (
         <div className="w-full px-4 sm:px-4">
             <div className="mx-auto rounded-2xl bg-white p-6 shadow-md ring-1 ring-gray-100 sm:p-8">
                 {/* Header */}
-                <h1 className="mb-3 text-lg font-bold text-gray-900 sm:mb-4 sm:text-2xl">Formulir Pendaftaran</h1>
+                <h1 className="mb-3 text-lg font-bold text-gray-900 sm:mb-4 sm:text-2xl">Aturan Pondok Pesantren</h1>
                 <p className="mb-8 text-sm text-gray-600 sm:text-base">
-                    Silakan lengkapi data berikut dengan benar untuk melanjutkan proses pendaftaran.
+                    Silakan baca dan pahami aturan pondok pesantren berikut sebelum melanjutkan pendaftaran.
                 </p>
+
+                {loading ? (
+                    <div className="flex justify-center py-8">
+                        <div className="h-8 w-8 animate-spin rounded-full border-4 border-green-600 border-t-transparent"></div>
+                    </div>
+                ) : error ? (
+                    <div className="rounded-lg bg-red-50 p-4 text-red-700">
+                        <p>{error}</p>
+                    </div>
+                ) : document ? (
+                    <div className="space-y-6">
+                        <div className="rounded-lg border border-gray-200 p-6">
+                            <h2 className="mb-2 text-lg font-semibold text-gray-900">{document.name}</h2>
+                            <p className="mb-4 text-gray-600">{document.description}</p>
+
+                            {/* Document Viewer */}
+                            <div className="mb-4 rounded-lg border border-gray-300 bg-gray-50 p-2">
+                                {canPreview(document) ? (
+                                    renderPreview(document)
+                                ) : (
+                                    <div className="flex h-96 items-center justify-center">
+                                        <p className="text-gray-500">Pratinjau dokumen tidak tersedia untuk jenis file ini.</p>
+                                    </div>
+                                )}
+                            </div>
+
+                            <a
+                                href={document.file_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center rounded-lg bg-green-600 px-4 py-2 text-white hover:bg-green-700"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="mr-2 h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path
+                                        fillRule="evenodd"
+                                        d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
+                                        clipRule="evenodd"
+                                    />
+                                </svg>
+                                Unduh Aturan
+                            </a>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="rounded-lg bg-yellow-50 p-4 text-yellow-700">
+                        <p>Belum ada dokumen aturan yang tersedia.</p>
+                    </div>
+                )}
             </div>
         </div>
     );
 };
 
 const SuratPernyataan = function SuratPernyataan() {
+    const [document, setDocument] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        const fetchDocument = async () => {
+            try {
+                const response = await fetch('/api/documents/category/surat%20pernyataan');
+                if (response.ok) {
+                    const data = await response.json();
+                    setDocument(data);
+                } else {
+                    setError('Dokumen surat pernyataan tidak ditemukan');
+                }
+            } catch (err) {
+                setError('Gagal memuat dokumen surat pernyataan');
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchDocument();
+    }, []);
+
+    // Function to determine if we can preview the document
+    const canPreview = (doc: any) => {
+        if (!doc) return false;
+
+        // Check if it's a PDF
+        if (doc.extension === 'pdf' || doc.mime_type?.includes('pdf')) {
+            return true;
+        }
+
+        // Check if it's an image
+        if (doc.mime_type?.includes('image')) {
+            return true;
+        }
+
+        return false;
+    };
+
+    // Function to render the appropriate preview
+    const renderPreview = (doc: any) => {
+        if (!doc) return null;
+
+        // PDF preview
+        if (doc.extension === 'pdf' || doc.mime_type?.includes('pdf')) {
+            return <iframe src={`${doc.file_url}#view=fit`} className="h-96 w-full rounded-lg" title="Surat Pernyataan" frameBorder="0" />;
+        }
+
+        // Image preview
+        if (doc.mime_type?.includes('image')) {
+            return <img src={doc.file_url} alt={doc.name} className="h-96 w-full rounded-lg object-contain" />;
+        }
+
+        // Default message for unsupported types
+        return (
+            <div className="flex h-96 items-center justify-center">
+                <p className="text-gray-500">Pratinjau dokumen tidak tersedia untuk jenis file ini.</p>
+            </div>
+        );
+    };
+
     return (
         <div className="w-full px-4 sm:px-4">
             <div className="mx-auto rounded-2xl bg-white p-6 shadow-md ring-1 ring-gray-100 sm:p-8">
                 {/* Header */}
-                <h1 className="mb-3 text-lg font-bold text-gray-900 sm:mb-4 sm:text-2xl">Formulir Pendaftaran</h1>
+                <h1 className="mb-3 text-lg font-bold text-gray-900 sm:mb-4 sm:text-2xl">Surat Pernyataan</h1>
                 <p className="mb-8 text-sm text-gray-600 sm:text-base">
-                    Silakan lengkapi data berikut dengan benar untuk melanjutkan proses pendaftaran.
+                    Silakan unduh dan cetak surat pernyataan berikut, lalu tanda tangani sebelum melanjutkan pendaftaran.
                 </p>
+
+                {loading ? (
+                    <div className="flex justify-center py-8">
+                        <div className="h-8 w-8 animate-spin rounded-full border-4 border-green-600 border-t-transparent"></div>
+                    </div>
+                ) : error ? (
+                    <div className="rounded-lg bg-red-50 p-4 text-red-700">
+                        <p>{error}</p>
+                    </div>
+                ) : document ? (
+                    <div className="space-y-6">
+                        <div className="rounded-lg border border-gray-200 p-6">
+                            <h2 className="mb-2 text-lg font-semibold text-gray-900">{document.name}</h2>
+                            <p className="mb-4 text-gray-600">{document.description}</p>
+
+                            {/* Document Viewer */}
+                            <div className="mb-4 rounded-lg border border-gray-300 bg-gray-50 p-2">
+                                {canPreview(document) ? (
+                                    renderPreview(document)
+                                ) : (
+                                    <div className="flex h-96 items-center justify-center">
+                                        <p className="text-gray-500">Pratinjau dokumen tidak tersedia untuk jenis file ini.</p>
+                                    </div>
+                                )}
+                            </div>
+
+                            <a
+                                href={document.file_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center rounded-lg bg-green-600 px-4 py-2 text-white hover:bg-green-700"
+                            >
+                                <svg xmlns="http://www.w3.org/2000/svg" className="mr-2 h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path
+                                        fillRule="evenodd"
+                                        d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z"
+                                        clipRule="evenodd"
+                                    />
+                                </svg>
+                                Unduh Surat Pernyataan
+                            </a>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="rounded-lg bg-yellow-50 p-4 text-yellow-700">
+                        <p>Belum ada dokumen surat pernyataan yang tersedia.</p>
+                    </div>
+                )}
             </div>
         </div>
     );
@@ -123,6 +449,8 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
         image_bukti_transaksi_url: null,
         status_pendaftaran: 'menunggu verifikasi',
     });
+
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const [nisnChecked, setNisnChecked] = useState(false);
     const [nisnAvailable, setNisnAvailable] = useState(false);
@@ -349,9 +677,10 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                             if (value.length <= 10) {
                                                 setData('nisn', value);
                                                 // Reset validation when user types
-                                                if (nisnChecked) {
+                                                if (nisnChecked || nisnError) {
                                                     setNisnChecked(false);
                                                     setNisnAvailable(false);
+                                                    setNisnError('');
                                                 }
                                             }
                                         }}
@@ -359,7 +688,9 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                         maxLength={10} // safeguard
                                         inputMode="numeric" // keypad angka di HP
                                         pattern="\d{10}" // HTML5 validasi: wajib 10 digit
-                                        className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base"
+                                        className={`flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
+                                            nisnError ? 'border-red-500' : ''
+                                        }`}
                                     />
                                     <button
                                         type="button"
@@ -375,8 +706,21 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     </button>
                                 </div>
                                 {nisnChecked && nisnAvailable && (
-                                    <div className="mt-2 inline-block rounded bg-green-700 p-2 text-sm text-white">
+                                    <div className="mt-2 flex items-center rounded bg-green-100 p-2 text-sm text-green-700">
+                                        <CheckCircle2 className="mr-2 h-4 w-4" />
                                         NISN tersedia dan dapat digunakan
+                                    </div>
+                                )}
+                                {nisnError && (
+                                    <div className="mt-2 flex items-center rounded bg-red-100 p-2 text-sm text-red-700">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="mr-2 h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                            <path
+                                                fillRule="evenodd"
+                                                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                                                clipRule="evenodd"
+                                            />
+                                        </svg>
+                                        {nisnError}
                                     </div>
                                 )}
                                 {errors.nisn && <div className="mt-1 text-sm text-red-700">{errors.nisn}</div>}
@@ -910,12 +1254,12 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     }`}
                                 >
                                     <option value="">Pilih Rentang Penghasilan</option>
-                                    <option value="income_1">Kurang dari Rp 500.000</option>
-                                    <option value="income_2">Rp 500.000 - Rp 1.000.000</option>
-                                    <option value="income_3">Rp 1.000.000 - Rp 2.000.000</option>
-                                    <option value="income_4">Rp 2.000.000 - Rp 3.000.000</option>
-                                    <option value="income_5">Rp 3.000.000 - Rp 5.000.000</option>
-                                    <option value="income_6">Lebih dari Rp 5.000.000</option>
+                                    <option value="Kurang dari Rp. 500.000">Kurang dari Rp. 500.000</option>
+                                    <option value="Rp. 500.000 - Rp. 1.000.000">Rp. 500.000 - Rp. 1.000.000</option>
+                                    <option value="Rp. 1.000.000 - Rp. 2.000.000">Rp. 1.000.000 - Rp. 2.000.000</option>
+                                    <option value="Rp. 2.000.000 - Rp. 3.000.000">Rp. 2.000.000 - Rp. 3.000.000</option>
+                                    <option value="Rp. 3.000.000 - Rp. 5.000.000">Rp. 3.000.000 - Rp. 5.000.000</option>
+                                    <option value="Lebih dari Rp. 5.000.000">Lebih dari Rp. 5.000.000</option>
                                 </select>
 
                                 {errors.penghasilan && <div className="mt-1 text-sm text-red-700">{errors.penghasilan}</div>}
@@ -1012,6 +1356,57 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                 {errors.seragam && <div className="mt-1 text-sm text-red-700">{errors.seragam}</div>}
                             </div>
 
+                            {/* Bank Information */}
+                            <div className="md:col-span-2">
+                                <div className="relative overflow-hidden rounded-xl border border-green-200 bg-white shadow-sm">
+                                    {/* Header */}
+                                    <div className="flex items-center gap-2 border-b border-green-100 bg-green-50 px-5 py-4">
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            className="h-6 w-6 text-green-600"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M3 10h18M5 6h14M9 14h6m-7 4h8M4 20h16"
+                                            />
+                                        </svg>
+                                        <h3 className="text-lg font-semibold text-green-800">Informasi Transfer</h3>
+                                    </div>
+
+                                    {/* Content */}
+                                    <div className="space-y-3 px-5 py-4">
+                                        <dl className="space-y-2">
+                                            <div>
+                                                <dt className="sr-only">Bank</dt>
+                                                <dd className="text-base font-medium text-gray-900">Bank Syariah Indonesia (BSI)</dd>
+                                            </div>
+                                            <div>
+                                                <dt className="text-sm text-gray-500">No. Rekening</dt>
+                                                <dd className="flex items-center gap-2 text-gray-800">
+                                                    <span className="font-semibold">2220120239</span>
+                                                    <button
+                                                        type="button"
+                                                        className="rounded-md bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700 hover:bg-green-200 focus:ring-2 focus:ring-green-500 focus:outline-none"
+                                                        onClick={() => navigator.clipboard.writeText('2220120239')}
+                                                    >
+                                                        Salin
+                                                    </button>
+                                                </dd>
+                                            </div>
+                                            <div>
+                                                <dt className="text-sm text-gray-500">Atas Nama</dt>
+                                                <dd className="font-semibold text-gray-800">YPI AZ ZAINI AL AZHARI PASER</dd>
+                                            </div>
+                                        </dl>
+                                    </div>
+                                </div>
+                            </div>
+
                             {/* Nama Pengirim */}
                             <div className="md:col-span-2">
                                 <label className="mb-2 block text-sm font-medium text-gray-900">Nama Pengirim (Sesuai Rekening)</label>
@@ -1032,9 +1427,12 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                             {/* Bukti Transaksi */}
                             <div className="md:col-span-2">
                                 <label className="mb-2 block text-sm font-medium text-gray-900">Bukti Transaksi</label>
+
+                                {/* Hidden file input that's always available for both initial selection and change */}
                                 <input
                                     type="file"
                                     name="image_bukti_transaksi_url"
+                                    ref={fileInputRef}
                                     disabled={!nisnChecked || !nisnAvailable}
                                     onChange={(e) => {
                                         if (e.target.files && e.target.files[0]) {
@@ -1044,11 +1442,66 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                         }
                                     }}
                                     accept="image/*"
-                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
-                                        !nisnChecked || !nisnAvailable ? 'cursor-not-allowed bg-gray-100' : ''
-                                    }`}
+                                    className="hidden"
                                 />
-                                <p className="mt-1 text-sm text-gray-500">Unggah bukti pembayaran pendaftaran</p>
+
+                                {!data.image_bukti_transaksi_url ? (
+                                    // File input when no file is selected
+                                    <div>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                if (fileInputRef.current) {
+                                                    fileInputRef.current.value = ''; // Clear previous value
+                                                    fileInputRef.current.click();
+                                                }
+                                            }}
+                                            disabled={!nisnChecked || !nisnAvailable}
+                                            className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
+                                                !nisnChecked || !nisnAvailable ? 'cursor-not-allowed bg-gray-100' : 'bg-white hover:bg-gray-50'
+                                            }`}
+                                        >
+                                            <div className="text-left text-gray-500">Klik untuk mengunggah bukti pembayaran pendaftaran</div>
+                                        </button>
+                                        <p className="mt-1 text-sm text-gray-500">Unggah bukti pembayaran pendaftaran</p>
+                                    </div>
+                                ) : (
+                                    // Preview and controls when file is selected
+                                    <div className="space-y-4">
+                                        <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+                                            <p className="mb-2 text-sm font-medium text-gray-900">Pratinjau Bukti Transaksi:</p>
+                                            <div className="flex flex-col items-center">
+                                                <img
+                                                    src={URL.createObjectURL(data.image_bukti_transaksi_url)}
+                                                    alt="Preview Bukti Transaksi"
+                                                    className="max-h-48 w-auto rounded-md object-contain"
+                                                />
+                                                <div className="mt-3 flex space-x-2">
+                                                    <button
+                                                        type="button"
+                                                        className="cursor-pointer rounded-lg bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
+                                                        onClick={() => {
+                                                            if (fileInputRef.current) {
+                                                                fileInputRef.current.value = ''; // Clear previous value
+                                                                fileInputRef.current.click();
+                                                            }
+                                                        }}
+                                                    >
+                                                        Ganti
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        className="cursor-pointer rounded-lg bg-red-500 px-4 py-2 text-white hover:bg-red-600"
+                                                        onClick={() => setData('image_bukti_transaksi_url', null)}
+                                                    >
+                                                        Hapus
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
                                 {errors.image_bukti_transaksi_url && (
                                     <div className="mt-1 text-sm text-red-700">{errors.image_bukti_transaksi_url}</div>
                                 )}
@@ -1072,7 +1525,7 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
     );
 };
 
-export default function MultiStep() {
+const MultiStep = function MultiStep() {
     const [currentStep, setCurrentStep] = useState(0);
 
     const nextStep = () => {
@@ -1158,19 +1611,18 @@ export default function MultiStep() {
                 </div>
 
                 {/* Navigation Buttons */}
-                <div className="flex- mt-10 flex gap-4 p-4 sm:flex-row sm:justify-between">
-                    {/* Tombol Sebelumnya */}
-                    <button
-                        onClick={prevStep}
-                        disabled={currentStep === 0}
-                        className={`w-full rounded-xl px-6 py-3 text-sm font-medium transition-all sm:w-auto ${
-                            currentStep === 0 ? 'cursor-not-allowed bg-gray-200 text-gray-400' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                        }`}
-                    >
-                        ← Sebelumnya
-                    </button>
+                <div className="flex- mt-10 flex gap-4 p-4 sm:flex-row sm:justify-end">
+                    {/* Tombol Sebelumnya - hidden on first step */}
+                    {currentStep > 0 && (
+                        <button
+                            onClick={prevStep}
+                            className="w-full rounded-xl bg-gray-100 px-6 py-3 text-sm font-medium text-gray-700 transition-all hover:bg-gray-200 sm:w-auto"
+                        >
+                            ← Sebelumnya
+                        </button>
+                    )}
 
-                    {/* Tombol Selanjutnya / Selesai */}
+                    {/* Tombol Selanjutnya - shown on all steps but changes behavior on last step */}
                     {currentStep < steps.length - 1 ? (
                         <button
                             onClick={nextStep}
@@ -1179,12 +1631,14 @@ export default function MultiStep() {
                             Selanjutnya →
                         </button>
                     ) : (
-                        <button className="w-full rounded-xl bg-green-600 px-6 py-3 text-sm font-medium text-white shadow-md transition-all hover:bg-green-700 sm:w-auto">
-                            Selesai ✓
-                        </button>
+                        // On the last step, we don't show next/finish button since form is in the last step
+                        // The form submission is handled within FormulirPendaftaran component
+                        <div className="w-full sm:w-auto"></div>
                     )}
                 </div>
             </div>
         </section>
     );
-}
+};
+
+export default MultiStep;
