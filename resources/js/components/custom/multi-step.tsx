@@ -9,7 +9,7 @@ import {
     MousePointerClick,
     Pencil,
 } from 'lucide-react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 const steps = [
     { id: 1, title: 'Tahapan Pendaftaran' },
@@ -39,6 +39,11 @@ interface FormulirPendaftaranData {
     nama_pengirim: string;
     image_bukti_transaksi_url: File | null;
     status_pendaftaran?: string; // default di DB
+}
+
+interface Region {
+    id: string;
+    name: string;
 }
 
 const TahapanPendaftaran = () => {
@@ -228,7 +233,104 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
     const [checkingNisn, setCheckingNisn] = useState(false);
     const [nisnError, setNisnError] = useState('');
 
-    // No region fetching needed since we're using manual input
+    // Region Data State
+    const [provinces, setProvinces] = useState<Region[]>([]);
+    const [cities, setCities] = useState<Region[]>([]);
+    const [districts, setDistricts] = useState<Region[]>([]);
+    const [villages, setVillages] = useState<Region[]>([]);
+
+    const [selectedProvinceCode, setSelectedProvinceCode] = useState('');
+    const [selectedCityCode, setSelectedCityCode] = useState('');
+    const [selectedDistrictCode, setSelectedDistrictCode] = useState('');
+
+    useEffect(() => {
+        fetch('/api/regions/provinces')
+            .then((res) => res.json())
+            .then((data) => setProvinces(data))
+            .catch((err) => console.error(err));
+    }, []);
+
+    const handleProvinceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const code = e.target.value;
+        const name = provinces.find((p) => p.id == code)?.name || '';
+
+        setSelectedProvinceCode(code);
+        setCities([]);
+        setDistricts([]);
+        setVillages([]);
+        setSelectedCityCode('');
+        setSelectedDistrictCode('');
+
+        setData({
+            ...data,
+            provinsi: name,
+            kota: '',
+            kecamatan: '',
+            kelurahan: ''
+        });
+
+        if (code) {
+            fetch(`/api/regions/cities/${code}`)
+                .then((res) => res.json())
+                .then((data) => setCities(data))
+                .catch((err) => console.error(err));
+        }
+    };
+
+    const handleCityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const code = e.target.value;
+        const name = cities.find((c) => c.id == code)?.name || '';
+
+        setSelectedCityCode(code);
+        setDistricts([]);
+        setVillages([]);
+        setSelectedDistrictCode('');
+
+        setData({
+            ...data,
+            kota: name,
+            kecamatan: '',
+            kelurahan: ''
+        });
+
+        if (code) {
+            fetch(`/api/regions/districts/${code}`)
+                .then((res) => res.json())
+                .then((data) => setDistricts(data))
+                .catch((err) => console.error(err));
+        }
+    };
+
+    const handleDistrictChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const code = e.target.value;
+        const name = districts.find((d) => d.id == code)?.name || '';
+
+        setSelectedDistrictCode(code);
+        setVillages([]);
+
+        setData({
+            ...data,
+            kecamatan: name,
+            kelurahan: ''
+        });
+
+        if (code) {
+            fetch(`/api/regions/villages/${code}`)
+                .then((res) => res.json())
+                .then((data) => setVillages(data))
+                .catch((err) => console.error(err));
+        }
+    };
+
+    const handleVillageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const code = e.target.value;
+        const name = villages.find((v) => v.id == code)?.name || '';
+        if (code) {
+            setData({ ...data, kelurahan: name });
+        } else {
+            setData({ ...data, kelurahan: '' });
+        }
+    };
 
     // Function to check NISN availability
     const checkNisn = async () => {
@@ -361,9 +463,8 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                         maxLength={10} // safeguard
                                         inputMode="numeric" // keypad angka di HP
                                         pattern="\d{10}" // HTML5 validasi: wajib 10 digit
-                                        className={`flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
-                                            nisnError ? 'border-red-500' : ''
-                                        }`}
+                                        className={`flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${nisnError ? 'border-red-500' : ''
+                                            }`}
                                     />
                                     <button
                                         type="button"
@@ -373,13 +474,12 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                             !data.nisn ||
                                             data.nisn.length !== 10
                                         }
-                                        className={`cursor-pointer rounded-lg px-6 py-2 text-sm font-semibold text-white transition-colors focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 focus:outline-none ${
-                                            checkingNisn ||
+                                        className={`cursor-pointer rounded-lg px-6 py-2 text-sm font-semibold text-white transition-colors focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 focus:outline-none ${checkingNisn ||
                                             !data.nisn ||
                                             data.nisn.length !== 10
-                                                ? 'cursor-not-allowed bg-gray-400'
-                                                : 'bg-indigo-600 hover:bg-indigo-700'
-                                        }`}
+                                            ? 'cursor-not-allowed bg-gray-400'
+                                            : 'bg-indigo-600 hover:bg-indigo-700'
+                                            }`}
                                     >
                                         {checkingNisn
                                             ? 'MEMERIKSA...'
@@ -437,11 +537,10 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                             : 'Nama Pendaftar'
                                     }
                                     disabled={!nisnChecked || !nisnAvailable}
-                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
-                                        !nisnChecked || !nisnAvailable
-                                            ? 'cursor-not-allowed bg-gray-100'
-                                            : ''
-                                    }`}
+                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${!nisnChecked || !nisnAvailable
+                                        ? 'cursor-not-allowed bg-gray-100'
+                                        : ''
+                                        }`}
                                 />
                                 {errors.nama && (
                                     <p className="mt-2 text-sm text-red-600">
@@ -465,11 +564,10 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                         )
                                     }
                                     disabled={!nisnChecked || !nisnAvailable}
-                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
-                                        !nisnChecked || !nisnAvailable
-                                            ? 'cursor-not-allowed bg-gray-100'
-                                            : ''
-                                    }`}
+                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${!nisnChecked || !nisnAvailable
+                                        ? 'cursor-not-allowed bg-gray-100'
+                                        : ''
+                                        }`}
                                 >
                                     <option
                                         value=""
@@ -521,11 +619,10 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     inputMode="numeric" // agar di HP muncul keypad angka
                                     pattern="\d{16}" // HTML5 pattern: validasi 16 digit
                                     disabled={!nisnChecked || !nisnAvailable}
-                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
-                                        !nisnChecked || !nisnAvailable
-                                            ? 'cursor-not-allowed bg-gray-100'
-                                            : ''
-                                    }`}
+                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${!nisnChecked || !nisnAvailable
+                                        ? 'cursor-not-allowed bg-gray-100'
+                                        : ''
+                                        }`}
                                 />
                                 {errors.nik && (
                                     <p className="mt-2 text-sm text-red-600">
@@ -560,11 +657,10 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     inputMode="numeric" // agar keypad HP angka
                                     pattern="\d{16}" // HTML5 pattern: wajib 16 digit
                                     disabled={!nisnChecked || !nisnAvailable}
-                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
-                                        !nisnChecked || !nisnAvailable
-                                            ? 'cursor-not-allowed bg-gray-100'
-                                            : ''
-                                    }`}
+                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${!nisnChecked || !nisnAvailable
+                                        ? 'cursor-not-allowed bg-gray-100'
+                                        : ''
+                                        }`}
                                 />
 
                                 {errors.nomor_kk && (
@@ -588,11 +684,10 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     }
                                     placeholder="Masukkan Tempat Lahir"
                                     disabled={!nisnChecked || !nisnAvailable}
-                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
-                                        !nisnChecked || !nisnAvailable
-                                            ? 'cursor-not-allowed bg-gray-100'
-                                            : ''
-                                    }`}
+                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${!nisnChecked || !nisnAvailable
+                                        ? 'cursor-not-allowed bg-gray-100'
+                                        : ''
+                                        }`}
                                 />
                                 {errors.tempat_lahir && (
                                     <p className="mt-2 text-sm text-red-600">
@@ -621,11 +716,10 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                         }
                                     }}
                                     disabled={!nisnChecked || !nisnAvailable}
-                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
-                                        !nisnChecked || !nisnAvailable
-                                            ? 'cursor-not-allowed bg-gray-100'
-                                            : ''
-                                    }`}
+                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${!nisnChecked || !nisnAvailable
+                                        ? 'cursor-not-allowed bg-gray-100'
+                                        : ''
+                                        }`}
                                 />
                                 {errors.tanggal_lahir && (
                                     <p className="mt-2 text-sm text-red-600">
@@ -646,11 +740,10 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                         setData('jenis_kelamin', e.target.value)
                                     }
                                     disabled={!nisnChecked || !nisnAvailable}
-                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
-                                        !nisnChecked || !nisnAvailable
-                                            ? 'cursor-not-allowed bg-gray-100'
-                                            : ''
-                                    }`}
+                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${!nisnChecked || !nisnAvailable
+                                        ? 'cursor-not-allowed bg-gray-100'
+                                        : ''
+                                        }`}
                                 >
                                     <option value="">
                                         Pilih Jenis Kelamin
@@ -686,11 +779,10 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     }
                                     placeholder="Contoh: Jl. Pangeran Antasari No. 45 RT 03/RW 05, Kel. Air Putih, Kec. Samarinda Ulu, Kota Samarinda, Kalimantan Timur, 75119"
                                     disabled={!nisnChecked || !nisnAvailable}
-                                    className={`min-h-[100px] w-full resize-y rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
-                                        !nisnChecked || !nisnAvailable
-                                            ? 'cursor-not-allowed bg-gray-100'
-                                            : ''
-                                    }`}
+                                    className={`min-h-[100px] w-full resize-y rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${!nisnChecked || !nisnAvailable
+                                        ? 'cursor-not-allowed bg-gray-100'
+                                        : ''
+                                        }`}
                                 />
                                 {errors.alamat && (
                                     <div className="mt-1 text-sm text-red-700">
@@ -704,23 +796,25 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     <label className="mb-2 block text-sm font-medium text-gray-900">
                                         Provinsi
                                     </label>
-                                    <input
-                                        type="text"
+                                    <select
                                         name="provinsi"
-                                        value={data.provinsi}
-                                        onChange={(e) =>
-                                            setData('provinsi', e.target.value)
-                                        }
-                                        placeholder="Masukkan nama provinsi"
-                                        className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
-                                            !nisnChecked || !nisnAvailable
-                                                ? 'cursor-not-allowed bg-gray-100'
-                                                : ''
-                                        }`}
+                                        value={selectedProvinceCode}
+                                        onChange={handleProvinceChange}
+                                        className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${!nisnChecked || !nisnAvailable
+                                            ? 'cursor-not-allowed bg-gray-100'
+                                            : ''
+                                            }`}
                                         disabled={
                                             !nisnChecked || !nisnAvailable
                                         }
-                                    />
+                                    >
+                                        <option value="">Pilih Provinsi</option>
+                                        {provinces.map((p) => (
+                                            <option key={p.id} value={p.id}>
+                                                {p.name}
+                                            </option>
+                                        ))}
+                                    </select>
                                     {errors.provinsi && (
                                         <div className="mt-1 text-sm text-red-700">
                                             {errors.provinsi}
@@ -733,23 +827,25 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     <label className="mb-2 block text-sm font-medium text-gray-900">
                                         Kota / Kabupaten
                                     </label>
-                                    <input
-                                        type="text"
+                                    <select
                                         name="kota"
-                                        value={data.kota}
-                                        onChange={(e) =>
-                                            setData('kota', e.target.value)
-                                        }
-                                        placeholder="Masukkan nama kota/kabupaten"
-                                        className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
-                                            !nisnChecked || !nisnAvailable
-                                                ? 'cursor-not-allowed bg-gray-100'
-                                                : ''
-                                        }`}
+                                        value={selectedCityCode}
+                                        onChange={handleCityChange}
+                                        className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${!nisnChecked || !nisnAvailable
+                                            ? 'cursor-not-allowed bg-gray-100'
+                                            : ''
+                                            }`}
                                         disabled={
-                                            !nisnChecked || !nisnAvailable
+                                            !nisnChecked || !nisnAvailable || !selectedProvinceCode
                                         }
-                                    />
+                                    >
+                                        <option value="">Pilih Kota/Kabupaten</option>
+                                        {cities.map((city) => (
+                                            <option key={city.id} value={city.id}>
+                                                {city.name}
+                                            </option>
+                                        ))}
+                                    </select>
                                     {errors.kota && (
                                         <div className="mt-1 text-sm text-red-700">
                                             {errors.kota}
@@ -762,23 +858,25 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     <label className="mb-2 block text-sm font-medium text-gray-900">
                                         Kecamatan
                                     </label>
-                                    <input
-                                        type="text"
+                                    <select
                                         name="kecamatan"
-                                        value={data.kecamatan}
-                                        onChange={(e) =>
-                                            setData('kecamatan', e.target.value)
-                                        }
-                                        placeholder="Masukkan nama kecamatan"
-                                        className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
-                                            !nisnChecked || !nisnAvailable
-                                                ? 'cursor-not-allowed bg-gray-100'
-                                                : ''
-                                        }`}
+                                        value={selectedDistrictCode}
+                                        onChange={handleDistrictChange}
+                                        className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${!nisnChecked || !nisnAvailable
+                                            ? 'cursor-not-allowed bg-gray-100'
+                                            : ''
+                                            }`}
                                         disabled={
-                                            !nisnChecked || !nisnAvailable
+                                            !nisnChecked || !nisnAvailable || !selectedCityCode
                                         }
-                                    />
+                                    >
+                                        <option value="">Pilih Kecamatan</option>
+                                        {districts.map((district) => (
+                                            <option key={district.id} value={district.id}>
+                                                {district.name}
+                                            </option>
+                                        ))}
+                                    </select>
                                     {errors.kecamatan && (
                                         <div className="mt-1 text-sm text-red-700">
                                             {errors.kecamatan}
@@ -791,23 +889,24 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     <label className="mb-2 block text-sm font-medium text-gray-900">
                                         Kelurahan / Desa
                                     </label>
-                                    <input
-                                        type="text"
+                                    <select
                                         name="kelurahan"
-                                        value={data.kelurahan}
-                                        onChange={(e) =>
-                                            setData('kelurahan', e.target.value)
-                                        }
-                                        placeholder="Masukkan nama kelurahan/desa"
-                                        className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
-                                            !nisnChecked || !nisnAvailable
-                                                ? 'cursor-not-allowed bg-gray-100'
-                                                : ''
-                                        }`}
+                                        onChange={handleVillageChange}
+                                        className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${!nisnChecked || !nisnAvailable
+                                            ? 'cursor-not-allowed bg-gray-100'
+                                            : ''
+                                            }`}
                                         disabled={
-                                            !nisnChecked || !nisnAvailable
+                                            !nisnChecked || !nisnAvailable || !selectedDistrictCode
                                         }
-                                    />
+                                    >
+                                        <option value="">Pilih Kelurahan/Desa</option>
+                                        {villages.map((village) => (
+                                            <option key={village.id} value={village.id}>
+                                                {village.name}
+                                            </option>
+                                        ))}
+                                    </select>
                                     {errors.kelurahan && (
                                         <div className="mt-1 text-sm text-red-700">
                                             {errors.kelurahan}
@@ -815,6 +914,7 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     )}
                                 </div>
                             </div>
+
                         </div>
                     </div>
 
@@ -837,11 +937,10 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     }
                                     placeholder="Nama Sekolah Asal"
                                     disabled={!nisnChecked || !nisnAvailable}
-                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
-                                        !nisnChecked || !nisnAvailable
-                                            ? 'cursor-not-allowed bg-gray-100'
-                                            : ''
-                                    }`}
+                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${!nisnChecked || !nisnAvailable
+                                        ? 'cursor-not-allowed bg-gray-100'
+                                        : ''
+                                        }`}
                                 />
                                 {errors.asal_sekolah && (
                                     <div className="mt-1 text-sm text-red-700">
@@ -872,11 +971,10 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     }
                                     placeholder="Nama Ayah"
                                     disabled={!nisnChecked || !nisnAvailable}
-                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
-                                        !nisnChecked || !nisnAvailable
-                                            ? 'cursor-not-allowed bg-gray-100'
-                                            : ''
-                                    }`}
+                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${!nisnChecked || !nisnAvailable
+                                        ? 'cursor-not-allowed bg-gray-100'
+                                        : ''
+                                        }`}
                                 />
                                 {errors.nama_ayah && (
                                     <div className="mt-1 text-sm text-red-700">
@@ -899,11 +997,10 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     }
                                     placeholder="Nama Ibu"
                                     disabled={!nisnChecked || !nisnAvailable}
-                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
-                                        !nisnChecked || !nisnAvailable
-                                            ? 'cursor-not-allowed bg-gray-100'
-                                            : ''
-                                    }`}
+                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${!nisnChecked || !nisnAvailable
+                                        ? 'cursor-not-allowed bg-gray-100'
+                                        : ''
+                                        }`}
                                 />
                                 {errors.nama_ibu && (
                                     <div className="mt-1 text-sm text-red-700">
@@ -929,11 +1026,10 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                         )
                                     }
                                     placeholder="08xxxxxxxxx"
-                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
-                                        !nisnChecked || !nisnAvailable
-                                            ? 'cursor-not-allowed bg-gray-100'
-                                            : ''
-                                    }`}
+                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${!nisnChecked || !nisnAvailable
+                                        ? 'cursor-not-allowed bg-gray-100'
+                                        : ''
+                                        }`}
                                 />
                                 {errors.no_hp_orangtua && (
                                     <div className="mt-1 text-sm text-red-700">
@@ -1033,11 +1129,10 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                         setData('nama_pengirim', e.target.value)
                                     }
                                     placeholder="Nama Pengirim"
-                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
-                                        !nisnChecked || !nisnAvailable
-                                            ? 'cursor-not-allowed bg-gray-100'
-                                            : ''
-                                    }`}
+                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${!nisnChecked || !nisnAvailable
+                                        ? 'cursor-not-allowed bg-gray-100'
+                                        : ''
+                                        }`}
                                 />
                                 {errors.nama_pengirim && (
                                     <div className="mt-1 text-sm text-red-700">
@@ -1093,11 +1188,10 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                             disabled={
                                                 !nisnChecked || !nisnAvailable
                                             }
-                                            className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
-                                                !nisnChecked || !nisnAvailable
-                                                    ? 'cursor-not-allowed bg-gray-100'
-                                                    : 'bg-white hover:bg-gray-50'
-                                            }`}
+                                            className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${!nisnChecked || !nisnAvailable
+                                                ? 'cursor-not-allowed bg-gray-100'
+                                                : 'bg-white hover:bg-gray-50'
+                                                }`}
                                         >
                                             <div className="text-left text-gray-500">
                                                 Klik untuk mengunggah bukti
@@ -1178,13 +1272,13 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                             {processing
                                 ? 'Memproses...'
                                 : !nisnChecked || !nisnAvailable
-                                  ? 'Silakan cek NISN terlebih dahulu'
-                                  : 'Daftar Sekarang'}
+                                    ? 'Silakan cek NISN terlebih dahulu'
+                                    : 'Daftar Sekarang'}
                         </button>
                     </div>
-                </form>
-            </div>
-        </section>
+                </form >
+            </div >
+        </section >
     );
 };
 
@@ -1223,11 +1317,10 @@ const MultiStep = function MultiStep() {
                         >
                             <div className="flex flex-col items-center">
                                 <div
-                                    className={`flex h-8 w-8 items-center justify-center rounded-full border-2 transition-all duration-300 ${
-                                        index <= currentStep
-                                            ? 'border-green-600 bg-green-600 text-white'
-                                            : 'border-gray-300 bg-white text-gray-400'
-                                    }`}
+                                    className={`flex h-8 w-8 items-center justify-center rounded-full border-2 transition-all duration-300 ${index <= currentStep
+                                        ? 'border-green-600 bg-green-600 text-white'
+                                        : 'border-gray-300 bg-white text-gray-400'
+                                        }`}
                                 >
                                     {index < currentStep ? (
                                         <CheckCircle2 className="h-5 w-5" />
@@ -1236,13 +1329,12 @@ const MultiStep = function MultiStep() {
                                     )}
                                 </div>
                                 <span
-                                    className={`mt-2 text-sm font-medium ${
-                                        index === currentStep
-                                            ? 'font-semibold text-green-600'
-                                            : index < currentStep
-                                              ? 'text-gray-500'
-                                              : 'text-gray-400'
-                                    }`}
+                                    className={`mt-2 text-sm font-medium ${index === currentStep
+                                        ? 'font-semibold text-green-600'
+                                        : index < currentStep
+                                            ? 'text-gray-500'
+                                            : 'text-gray-400'
+                                        }`}
                                 >
                                     {step.title}
                                 </span>
