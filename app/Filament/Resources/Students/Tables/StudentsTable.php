@@ -71,7 +71,8 @@ class StudentsTable
                 TextColumn::make('nama_pengirim')
                     ->searchable()
                     ->label('Nama Pengirim'),
-                ImageColumn::make('image_bukti_transaksi_url'),
+                ImageColumn::make('image_bukti_transaksi_url')
+                    ->disk('public'),
                 TextColumn::make('status_pendaftaran')
                     ->searchable()
                     ->label('Status Pendaftaran'),
