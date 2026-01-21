@@ -14,7 +14,8 @@
         "laravel/tinker": "^2.10.1",
         "laravel/wayfinder": "^0.1.9",
         "laravolt/indonesia": "^0.39.0",
-        "laravolt/laravolt": "^6.19"
+        "laravolt/laravolt": "^6.19",
+        "maatwebsite/excel": "^3.1"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
