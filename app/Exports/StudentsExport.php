@@ -17,12 +17,23 @@ class StudentsExport implements FromQuery, WithHeadings, WithMapping
     public function query(): Builder
     {
         return Student::query()
-            ->when($this->filters['program_pendidikan'] ?? null, fn ($q, $v) =>
+            ->when($this->getFilterValue('program_pendidikan'), fn ($q, $v) =>
                 $q->where('program_pendidikan', $v)
             )
-            ->when($this->filters['jenis_kelamin'] ?? null, fn ($q, $v) =>
+            ->when($this->getFilterValue('jenis_kelamin'), fn ($q, $v) =>
                 $q->where('jenis_kelamin', $v)
             );
+    }
+
+    protected function getFilterValue(string $key): mixed
+    {
+        $value = $this->filters[$key] ?? null;
+
+        if (is_array($value) && array_key_exists('value', $value)) {
+            return $value['value'];
+        }
+
+        return $value;
     }
 
     public function headings(): array

@@ -89,8 +89,8 @@ class StudentsTable
             Action::make('export')
                 ->label('Export Excel')
                 ->icon('heroicon-o-arrow-down-tray')
-                ->action(function () {
-                    $filters = request()->query('filters', []);
+                ->action(function ($livewire) {
+                    $filters = $livewire->tableFilters;
                     return Excel::download(new StudentsExport($filters), 'data-santri-' . now()->format('Y-m-d') . '.xlsx');
                 }),
         ]);
