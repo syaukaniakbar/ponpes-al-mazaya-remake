@@ -10,6 +10,10 @@ use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Filament\Actions\Action;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\StudentsExport;
+
 
 class StudentsTable
 {
@@ -57,8 +61,8 @@ class StudentsTable
                 ->label('Bukti'),
         ])
         ->filters([
-                SelectFilter::make('jenjang_pendidikan')
-                    ->label('Jenjang Pendidikan')
+                SelectFilter::make('program_pendidikan')
+                    ->label('Program Pendidikan')
                     ->options([
                         'wustha'  => 'Wustha',
                         'ulya' => 'Ulya',
@@ -70,8 +74,8 @@ class StudentsTable
                 SelectFilter::make('jenis_kelamin')
                     ->label('Putra / Putri')
                     ->options([
-                        'L' => 'Putra',
-                        'P' => 'Putri',
+                        'laki-laki' => 'Putra',
+                        'perempuan' => 'Putri',
                     ]),
         ])
         ->recordActions([
@@ -82,6 +86,13 @@ class StudentsTable
             BulkActionGroup::make([
                 DeleteBulkAction::make(),
             ]),
+            Action::make('export')
+                ->label('Export Excel')
+                ->icon('heroicon-o-arrow-down-tray')
+                ->action(function ($livewire) {
+                    $filters = $livewire->tableFilters;
+                    return Excel::download(new StudentsExport($filters), 'data-santri-' . now()->format('Y-m-d') . '.xlsx');
+                }),
         ]);
     }
 }
