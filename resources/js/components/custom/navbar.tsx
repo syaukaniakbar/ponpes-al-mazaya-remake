@@ -18,7 +18,9 @@ const Navbar: React.FC = () => {
                 {/* Desktop CTA */}
                 <div className="hidden items-center gap-3 md:flex">
                     <a
-                        href="/"
+                        href="https://almazayapaser.ponpes.id/"
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-green-700"
                     >
                         Home
@@ -60,7 +62,9 @@ const Navbar: React.FC = () => {
                 <div className="border-t border-gray-200 bg-white md:hidden">
                     <div className="flex flex-col gap-3 px-4 py-4">
                         <a
-                            href="/"
+                            href="https://almazayapaser.ponpes.id/"
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="w-full rounded-md px-4 py-2 text-left text-gray-700 hover:bg-gray-100"
                         >
                             Home

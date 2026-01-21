@@ -29,6 +29,9 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->brandName('Al Mazaya')
+            ->brandLogo(asset('images/logo_al_mazaya.png'))
+            ->favicon(asset('images/favicon.png'))
+            ->globalSearch(false)
             ->colors([
                 'primary' => Color::Amber,
             ])
