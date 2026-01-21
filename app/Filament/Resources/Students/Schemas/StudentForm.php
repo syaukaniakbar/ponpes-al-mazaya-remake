@@ -51,6 +51,8 @@ class StudentForm
                     ->required(),
                 FileUpload::make('image_bukti_transaksi_url')
                     ->image()
+                    ->disk('public')
+                    ->directory('transaction_images')
                     ->required(),
                 TextInput::make('status_pendaftaran')
                     ->required()
