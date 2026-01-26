@@ -77,8 +77,8 @@ class StudentsTable
                 SelectFilter::make('jenis_kelamin')
                     ->label('Putra / Putri')
                     ->options([
-                        'laki-laki' => 'Putra',
-                        'perempuan' => 'Putri',
+                        'L' => 'Putra',
+                        'P' => 'Putri',
                     ]),
         ])
         ->recordActions([

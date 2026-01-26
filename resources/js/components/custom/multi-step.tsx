@@ -1,6 +1,7 @@
 import { useForm } from '@inertiajs/react';
 import {
     BookOpen,
+    CalendarCheck,
     CheckCircle2,
     CreditCard,
     Download,
@@ -126,6 +127,12 @@ const TahapanPendaftaran = () => {
             desc: 'Setelah form terkirim, halaman konfirmasi akan muncul terkait daftar ulang.',
             icon: CheckCircle2,
         },
+        {
+            step: '9',
+            title: 'Daftar Ulang',
+            desc: 'Calon santri melakukan pendaftaran ulang pada tanggal 2 Februari 2026 di lokasi Pondok Pesantren.',
+            icon: CalendarCheck,
+        },
     ];
 
     return (
@@ -142,7 +149,7 @@ const TahapanPendaftaran = () => {
                 </div>
 
                 {/* Steps */}
-                <div className="relative grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="relative grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
                     {steps.map((item, idx) => {
                         const Icon = item.icon;
                         return (
@@ -548,11 +555,10 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                         maxLength={10}
                                         inputMode="numeric"
                                         pattern="\d{10}"
-                                        className={`w-full flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
-                                            nisnError
+                                        className={`w-full flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${nisnError
                                                 ? 'border-red-500'
                                                 : 'border-gray-300'
-                                        }`}
+                                            }`}
                                     />
                                     <button
                                         type="button"
@@ -562,13 +568,12 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                             !data.nisn ||
                                             data.nisn.length !== 10
                                         }
-                                        className={`w-full rounded-lg px-4 py-2 text-sm font-semibold text-white transition-colors focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 focus:outline-none sm:w-auto sm:text-base ${
-                                            checkingNisn ||
-                                            !data.nisn ||
-                                            data.nisn.length !== 10
+                                        className={`w-full rounded-lg px-4 py-2 text-sm font-semibold text-white transition-colors focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 focus:outline-none sm:w-auto sm:text-base ${checkingNisn ||
+                                                !data.nisn ||
+                                                data.nisn.length !== 10
                                                 ? 'cursor-not-allowed bg-gray-400'
                                                 : 'bg-indigo-600 hover:bg-indigo-700'
-                                        }`}
+                                            }`}
                                     >
                                         {checkingNisn
                                             ? 'MEMERIKSA...'
@@ -628,11 +633,10 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                             : 'Nama Pendaftar'
                                     }
                                     disabled={!nisnChecked || !nisnAvailable}
-                                    className={`w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm transition-colors duration-150 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
-                                        !nisnChecked || !nisnAvailable
+                                    className={`w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm transition-colors duration-150 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${!nisnChecked || !nisnAvailable
                                             ? 'cursor-not-allowed bg-gray-100'
                                             : 'bg-white'
-                                    }`}
+                                        }`}
                                 />
                                 {errors.nama && (
                                     <p className="mt-1 text-sm text-red-600 sm:text-base">
@@ -656,11 +660,10 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                         )
                                     }
                                     disabled={!nisnChecked || !nisnAvailable}
-                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
-                                        !nisnChecked || !nisnAvailable
+                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${!nisnChecked || !nisnAvailable
                                             ? 'cursor-not-allowed bg-gray-100'
                                             : ''
-                                    }`}
+                                        }`}
                                 >
                                     <option
                                         value=""
@@ -712,11 +715,10 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     inputMode="numeric" // agar di HP muncul keypad angka
                                     pattern="\d{16}" // HTML5 pattern: validasi 16 digit
                                     disabled={!nisnChecked || !nisnAvailable}
-                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
-                                        !nisnChecked || !nisnAvailable
+                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${!nisnChecked || !nisnAvailable
                                             ? 'cursor-not-allowed bg-gray-100'
                                             : ''
-                                    }`}
+                                        }`}
                                 />
                                 {errors.nik && (
                                     <p className="mt-2 text-sm text-red-600">
@@ -751,11 +753,10 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     inputMode="numeric" // agar keypad HP angka
                                     pattern="\d{16}" // HTML5 pattern: wajib 16 digit
                                     disabled={!nisnChecked || !nisnAvailable}
-                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
-                                        !nisnChecked || !nisnAvailable
+                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${!nisnChecked || !nisnAvailable
                                             ? 'cursor-not-allowed bg-gray-100'
                                             : ''
-                                    }`}
+                                        }`}
                                 />
 
                                 {errors.nomor_kk && (
@@ -779,11 +780,10 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     }
                                     placeholder="Masukkan Tempat Lahir"
                                     disabled={!nisnChecked || !nisnAvailable}
-                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
-                                        !nisnChecked || !nisnAvailable
+                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${!nisnChecked || !nisnAvailable
                                             ? 'cursor-not-allowed bg-gray-100'
                                             : ''
-                                    }`}
+                                        }`}
                                 />
                                 {errors.tempat_lahir && (
                                     <p className="mt-2 text-sm text-red-600">
@@ -812,11 +812,10 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                         }
                                     }}
                                     disabled={!nisnChecked || !nisnAvailable}
-                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
-                                        !nisnChecked || !nisnAvailable
+                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${!nisnChecked || !nisnAvailable
                                             ? 'cursor-not-allowed bg-gray-100'
                                             : ''
-                                    }`}
+                                        }`}
                                 />
                                 {errors.tanggal_lahir && (
                                     <p className="mt-2 text-sm text-red-600">
@@ -837,11 +836,10 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                         setData('jenis_kelamin', e.target.value)
                                     }
                                     disabled={!nisnChecked || !nisnAvailable}
-                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
-                                        !nisnChecked || !nisnAvailable
+                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${!nisnChecked || !nisnAvailable
                                             ? 'cursor-not-allowed bg-gray-100'
                                             : ''
-                                    }`}
+                                        }`}
                                 >
                                     <option value="">
                                         Pilih Jenis Kelamin
@@ -877,11 +875,10 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     }
                                     placeholder="Contoh: Jl. Pangeran Antasari No. 45 RT 03/RW 05, Kel. Air Putih, Kec. Samarinda Ulu, Kota Samarinda, Kalimantan Timur, 75119"
                                     disabled={!nisnChecked || !nisnAvailable}
-                                    className={`min-h-[100px] w-full resize-y rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
-                                        !nisnChecked || !nisnAvailable
+                                    className={`min-h-[100px] w-full resize-y rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${!nisnChecked || !nisnAvailable
                                             ? 'cursor-not-allowed bg-gray-100'
                                             : ''
-                                    }`}
+                                        }`}
                                 />
                                 {errors.alamat && (
                                     <div className="mt-1 text-sm text-red-700">
@@ -899,11 +896,10 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                         name="provinsi"
                                         value={selectedProvinceCode}
                                         onChange={handleProvinceChange}
-                                        className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
-                                            !nisnChecked || !nisnAvailable
+                                        className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${!nisnChecked || !nisnAvailable
                                                 ? 'cursor-not-allowed bg-gray-100'
                                                 : ''
-                                        }`}
+                                            }`}
                                         disabled={
                                             !nisnChecked || !nisnAvailable
                                         }
@@ -931,11 +927,10 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                         name="kota"
                                         value={selectedCityCode}
                                         onChange={handleCityChange}
-                                        className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
-                                            !nisnChecked || !nisnAvailable
+                                        className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${!nisnChecked || !nisnAvailable
                                                 ? 'cursor-not-allowed bg-gray-100'
                                                 : ''
-                                        }`}
+                                            }`}
                                         disabled={
                                             !nisnChecked ||
                                             !nisnAvailable ||
@@ -970,11 +965,10 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                         name="kecamatan"
                                         value={selectedDistrictCode}
                                         onChange={handleDistrictChange}
-                                        className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
-                                            !nisnChecked || !nisnAvailable
+                                        className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${!nisnChecked || !nisnAvailable
                                                 ? 'cursor-not-allowed bg-gray-100'
                                                 : ''
-                                        }`}
+                                            }`}
                                         disabled={
                                             !nisnChecked ||
                                             !nisnAvailable ||
@@ -1008,11 +1002,10 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     <select
                                         name="kelurahan"
                                         onChange={handleVillageChange}
-                                        className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
-                                            !nisnChecked || !nisnAvailable
+                                        className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${!nisnChecked || !nisnAvailable
                                                 ? 'cursor-not-allowed bg-gray-100'
                                                 : ''
-                                        }`}
+                                            }`}
                                         disabled={
                                             !nisnChecked ||
                                             !nisnAvailable ||
@@ -1060,11 +1053,10 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     }
                                     placeholder="Nama Sekolah Asal"
                                     disabled={!nisnChecked || !nisnAvailable}
-                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
-                                        !nisnChecked || !nisnAvailable
+                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${!nisnChecked || !nisnAvailable
                                             ? 'cursor-not-allowed bg-gray-100'
                                             : ''
-                                    }`}
+                                        }`}
                                 />
                                 {errors.asal_sekolah && (
                                     <div className="mt-1 text-sm text-red-700">
@@ -1095,11 +1087,10 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     }
                                     placeholder="Nama Ayah"
                                     disabled={!nisnChecked || !nisnAvailable}
-                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
-                                        !nisnChecked || !nisnAvailable
+                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${!nisnChecked || !nisnAvailable
                                             ? 'cursor-not-allowed bg-gray-100'
                                             : ''
-                                    }`}
+                                        }`}
                                 />
                                 {errors.nama_ayah && (
                                     <div className="mt-1 text-sm text-red-700">
@@ -1122,11 +1113,10 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                     }
                                     placeholder="Nama Ibu"
                                     disabled={!nisnChecked || !nisnAvailable}
-                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
-                                        !nisnChecked || !nisnAvailable
+                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${!nisnChecked || !nisnAvailable
                                             ? 'cursor-not-allowed bg-gray-100'
                                             : ''
-                                    }`}
+                                        }`}
                                 />
                                 {errors.nama_ibu && (
                                     <div className="mt-1 text-sm text-red-700">
@@ -1152,11 +1142,10 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                         setData('no_hp_orangtua', onlyNumbers);
                                     }}
                                     placeholder="08xxxxxxxxx"
-                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
-                                        !nisnChecked || !nisnAvailable
+                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${!nisnChecked || !nisnAvailable
                                             ? 'cursor-not-allowed bg-gray-100'
                                             : ''
-                                    }`}
+                                        }`}
                                 />
 
                                 {errors.no_hp_orangtua && (
@@ -1257,11 +1246,10 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                         setData('nama_pengirim', e.target.value)
                                     }
                                     placeholder="Nama Pengirim"
-                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
-                                        !nisnChecked || !nisnAvailable
+                                    className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${!nisnChecked || !nisnAvailable
                                             ? 'cursor-not-allowed bg-gray-100'
                                             : ''
-                                    }`}
+                                        }`}
                                 />
                                 {errors.nama_pengirim && (
                                     <div className="mt-1 text-sm text-red-700">
@@ -1317,11 +1305,10 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                                             disabled={
                                                 !nisnChecked || !nisnAvailable
                                             }
-                                            className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${
-                                                !nisnChecked || !nisnAvailable
+                                            className={`w-full rounded-lg border border-gray-200 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 sm:text-base ${!nisnChecked || !nisnAvailable
                                                     ? 'cursor-not-allowed bg-gray-100'
                                                     : 'bg-white hover:bg-gray-50'
-                                            }`}
+                                                }`}
                                         >
                                             <div className="text-left text-gray-500">
                                                 Klik untuk mengunggah bukti
@@ -1402,8 +1389,8 @@ const FormulirPendaftaran = function FormulirPendaftaran() {
                             {processing
                                 ? 'Memproses...'
                                 : !nisnChecked || !nisnAvailable
-                                  ? 'Silakan cek NISN terlebih dahulu'
-                                  : 'Daftar Sekarang'}
+                                    ? 'Silakan cek NISN terlebih dahulu'
+                                    : 'Daftar Sekarang'}
                         </button>
                     </div>
                 </form>
@@ -1486,11 +1473,10 @@ const MultiStep = function MultiStep() {
                         >
                             <div className="flex flex-col items-center">
                                 <div
-                                    className={`flex h-8 w-8 items-center justify-center rounded-full border-2 transition-all duration-300 ${
-                                        index <= currentStep
+                                    className={`flex h-8 w-8 items-center justify-center rounded-full border-2 transition-all duration-300 ${index <= currentStep
                                             ? 'border-green-600 bg-green-600 text-white'
                                             : 'border-gray-300 bg-white text-gray-400'
-                                    }`}
+                                        }`}
                                 >
                                     {index < currentStep ? (
                                         <CheckCircle2 className="h-5 w-5" />
@@ -1499,13 +1485,12 @@ const MultiStep = function MultiStep() {
                                     )}
                                 </div>
                                 <span
-                                    className={`mt-2 text-sm font-medium ${
-                                        index === currentStep
+                                    className={`mt-2 text-sm font-medium ${index === currentStep
                                             ? 'font-semibold text-green-600'
                                             : index < currentStep
-                                              ? 'text-gray-500'
-                                              : 'text-gray-400'
-                                    }`}
+                                                ? 'text-gray-500'
+                                                : 'text-gray-400'
+                                        }`}
                                 >
                                     {step.title}
                                 </span>
@@ -1570,11 +1555,10 @@ const MultiStep = function MultiStep() {
                         <button
                             onClick={nextStep}
                             disabled={currentStep === 1 && !isAturanApproved}
-                            className={`flex cursor-pointer items-center justify-center gap-2 rounded-xl px-8 py-3.5 text-sm font-bold text-white shadow-lg shadow-green-200 transition-all active:scale-95 sm:w-auto ${
-                                !(currentStep === 1 && !isAturanApproved)
+                            className={`flex cursor-pointer items-center justify-center gap-2 rounded-xl px-8 py-3.5 text-sm font-bold text-white shadow-lg shadow-green-200 transition-all active:scale-95 sm:w-auto ${!(currentStep === 1 && !isAturanApproved)
                                     ? 'bg-green-600 hover:bg-green-700 hover:shadow-green-300'
                                     : 'cursor-not-allowed bg-gray-300 shadow-none'
-                            }`}
+                                }`}
                         >
                             Selanjutnya
                             <svg
@@ -1592,7 +1576,7 @@ const MultiStep = function MultiStep() {
                             </svg>
                         </button>
                     ) : /* Render tombol submit di sini jika form pendaftaran selesai */
-                    null}
+                        null}
                 </div>
             </div>
         </section>
